@@ -13,10 +13,10 @@
                         Quantity
                     </th>
                     <th class="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                        Description
+                        Assigned
                     </th>
                     <th class="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                        Assigned
+                        Description
                     </th>
                 </tr>
                 </thead>
@@ -29,13 +29,6 @@
                         <td class="px-5 py-5 border-b border-gray-200 bg-white text-sm">
                             {% if item.quantity %}
                                 {{ item.quantity }}
-                            {% else %}
-                                N/A
-                            {% endif %}
-                        </td>
-                        <td class="px-5 py-5 border-b border-gray-200 bg-white text-sm">
-                            {% if item.description %}
-                                {{ item.description }}
                             {% else %}
                                 N/A
                             {% endif %}
@@ -67,6 +60,13 @@
                             {% else %}
                                 <span class="inline-flex text-xs leading-5 font-semibold rounded-full text-right"
                                       style="background-color: #FED7D7; color: #C53030;">Not Assigned</span>
+                            {% endif %}
+                        </td>
+                        <td class="px-5 py-5 border-b border-gray-200 bg-white text-sm">
+                            {% if item.description %}
+                                {{ item.description }}
+                            {% else %}
+                                N/A
                             {% endif %}
                         </td>
                     </tr>
