@@ -6,6 +6,10 @@ server {
     location /static/ {
         root #PROJECT_ROOT;
     }
+    location /media/ {
+        autoindex on;
+        root #PROJECT_ROOT;
+    }
 
     location / {
         include proxy_params;
