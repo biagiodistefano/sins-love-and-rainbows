@@ -1,0 +1,14 @@
+server {
+    listen 80;
+    server_name sinsloveandrainbows.eu www.sinsloveandrainbows.eu;
+
+    location = /favicon.ico { access_log off; log_not_found off; }
+    location /static/ {
+        root #PROJECT_ROOT;
+    }
+
+    location / {
+        include proxy_params;
+        proxy_pass http://unix:/run/sinsloveandrainbows.sock;
+    }
+}
