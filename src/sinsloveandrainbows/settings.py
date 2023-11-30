@@ -31,7 +31,7 @@ CURRENT_BRANCH = check_output(['git', 'symbolic-ref', '--short', 'HEAD']).decode
 DEBUG = CURRENT_BRANCH != 'production'
 ALLOWED_HOSTS = [
     "127.0.0.1", "localhost",
-    "sinsloveandrainbows.com", "www.sinsloveandrainbows.com", "api.sinsloveandrainbows.com"
+    "sinsloveandrainbows.com", "www.sinsloveandrainbows.com", "api.sinsloveandrainbows.com",
     "sinsloveandrainbows.eu", "www.sinsloveandrainbows.eu", "api.sinsloveandrainbows.eu",
 ] if not DEBUG else ["*"]
 
