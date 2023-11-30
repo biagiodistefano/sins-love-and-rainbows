@@ -8,7 +8,7 @@ After=network.target
 User=#USER
 Group=www-data
 WorkingDirectory=#PROJECT_ROOT
-ExecStart=#PROJECT_ROOT/venv/bin/gunicorn \
+ExecStart=#PROJECT_ROOT/.venv/bin/gunicorn \
           --access-logfile - \
           --workers 1 \
           --bind unix:/run/sinsloveandrainbows.sock \
