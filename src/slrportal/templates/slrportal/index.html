@@ -1,0 +1,19 @@
+{% extends 'base.html' %}
+
+{% block title %}Index Page{% endblock %}
+
+{% block content %}
+<div class="flex flex-col justify-center items-center h-screen">
+    <!-- Image at the center -->
+    {% load static %}
+    <img src="{% static 'slrportal/slr_circle.png' %}" alt="Centered Image" class="mx-auto h-96 w-auto" />
+
+    <h1 class="text-3xl font-bold text-gray-800 mt-6">Sins, Love and Rainbows</h1>
+    <p class="text-xl text-gray-600 mt-2">Sex-positive parties in Vienna</p>
+
+    <!-- Row of link-buttons -->
+    <div class="flex mt-4">
+        <a href="{% url 'next_party' %}" class="mx-2 px-4 py-2 bg-green-500 text-white rounded hover:bg-green-700">Next Party -></a>
+    </div>
+</div>
+{% endblock %}

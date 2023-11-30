@@ -1,0 +1,63 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ party.name }}{% endblock %}
+
+{% block head %}
+    <meta property="og:title" content="{{ party.name }}">
+    {% load static %}
+    {% if party.logo %}
+        <meta property="og:image" content="{{ party.logo_url }}">
+    {% else %}
+        <meta property="og:image" content="{% static 'slrportal/slr_circle.png' %}">
+    {% endif %}
+    <meta property="og:description" content="{{ party.description }}">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="{{ request.build_absolute_uri }}">
+    <meta property="og:site_name" content="Your Site Name">
+{% endblock %}
+
+{% block content %}
+    <div class="container mx-auto p-4">
+        <!-- Party Details -->
+        <div class="bg-white shadow-lg rounded-lg p-6">
+            {% if party.logo %}
+                <img src="{{ party.logo_url }}" alt="{{ party.name }}"
+                     class="w-32 h-32 object-cover rounded-full mx-auto"/>
+            {% else %}
+                {% load static %}
+                <img src="{% static 'slrportal/slr_circle.png' %}" alt="Centered Image" class="mx-auto h-80 w-auto"/>
+            {% endif %}
+            <h2 class="text-2xl font-bold text-center mt-4">{{ party.name }}</h2>
+            <p class="text-center text-gray-600">{{ party.date_and_time|date:"D, d M Y @ H:i" }}</p>
+            {% if person %}
+                <p class="text-center mt-2"><b>{{ party.location }}</b></p>
+            {% endif %}
+            <p class="text-center mt-2">Confirmed: <b>{{ party.yes_count }}</b> Maybe: <b>{{ party.maybe_count }}</b>
+            </p>
+            <!-- Party Description -->
+            <div class="flex justify-center">
+                <div class="mt-4 w-full md:w-1/2 lg:w-1/3 text-center">
+                    {{ party.description_rendered|safe }}
+                </div>
+            </div>
+
+            <!-- Additional Details: Invite Summary, Links, etc. -->
+            <div class="container mx-auto px-4 py-6">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 overflow-auto">
+                    <!-- Column 1: Items -->
+                    <div id="items" class="tab-content col-span-1">
+                        {% include "slrportal/sections/items_and_tasks.html" %}
+                    </div>
+
+                    <!-- Column 2: Links -->
+                    <div id="links" class="tab-content col-span-1">
+                        {% include "slrportal/sections/useful_links.html" %}
+                    </div>
+                    <!-- Include for links will be added here -->
+                </div>
+            </div>
+
+
+        </div>
+    </div>
+{% endblock %}

@@ -1,0 +1,154 @@
+<div class="col-span-1">
+    <h1 class="text-3xl font-bold mb-4">Items and tasks</h1>
+    {% for items in party.iter_items %}
+        <section id="{{ items.0 }}-section" class="mb-4">
+            <h2 class="text-2xl font-bold mb-2">{{ items.0 }}</h2>
+            <table class="min-w-full leading-normal">
+                <thead>
+                <tr>
+                    <th class="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                        Name
+                    </th>
+                    <th class="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                        Quantity
+                    </th>
+                    <th class="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                        Description
+                    </th>
+                    <th class="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                        Assigned
+                    </th>
+                </tr>
+                </thead>
+                <tbody>
+                {% for item in items.1 %}
+                    <tr>
+                        <td class="px-5 py-5 border-b border-gray-200 bg-white text-sm">
+                            <b>{{ item.name }}</b>
+                        </td>
+                        <td class="px-5 py-5 border-b border-gray-200 bg-white text-sm">
+                            {% if item.quantity %}
+                                {{ item.quantity }}
+                            {% else %}
+                                N/A
+                            {% endif %}
+                        </td>
+                        <td class="px-5 py-5 border-b border-gray-200 bg-white text-sm">
+                            {% if item.description %}
+                                {{ item.description }}
+                            {% else %}
+                                N/A
+                            {% endif %}
+                        </td>
+                        <td class="px-5 py-5 border-b border-gray-200 bg-white text-sm">
+                            {% if item.assigned_to.count %}
+                                {% if person and person in item.assigned_to.all %}
+                                    <form action="{% url 'unassign_item' item_id=item.id person_id=person.id %}"
+                                          method="POST">
+                                        <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
+                                        <button type="submit"
+                                                class="inline-flex text-xs leading-5 font-semibold rounded-full text-right"
+                                                style="background-color: #c6f4f6; color: #3852a1;">Un-claim
+                                        </button>
+                                    </form>
+                                {% else %}
+                                    <span class="inline-flex text-xs leading-5 font-semibold rounded-full text-right"
+                                          style="background-color: #C6F6D5; color: #38A169;">Assigned</span>
+                                {% endif %}
+                            {% elif person %}
+                                <form action="{% url 'assign_item' item_id=item.id person_id=person.id %}"
+                                      method="POST">
+                                    <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
+                                    <button type="submit"
+                                            class="inline-flex text-xs leading-5 font-semibold rounded-full text-right"
+                                            style="background-color: #FED7D7; color: #C53030;">Claim
+                                    </button>
+                                </form>
+                            {% else %}
+                                <span class="inline-flex text-xs leading-5 font-semibold rounded-full text-right"
+                                      style="background-color: #FED7D7; color: #C53030;">Not Assigned</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </section>
+    {% endfor %}
+    {% if person %}
+        <section>
+            <h2 class="text-2xl font-bold mb-2">Add Item</h2>
+            <form action="{% url 'add_item' edition=party.edition %}" method="post" class="space-y-4">
+                {% csrf_token %}
+                <div class="flex flex-wrap -mx-3 mb-6">
+                    <div class="w-full md:w-1/2 px-3 mb-6 md:mb-0">
+                        <label for="id_name" class="block uppercase tracking-wide text-gray-700 text-xs font-bold mb-2">
+                            Name
+                        </label>
+                        <input type="text" name="name" id="id_name"
+                               class="appearance-none block w-full bg-gray-200 text-gray-700 border border-gray-200 rounded py-3 px-4 leading-tight focus:outline-none focus:bg-white focus:border-gray-500"
+                               placeholder="Item Name">
+                    </div>
+
+                    <div class="w-full md:w-1/2 px-3">
+                        <label for="id_category"
+                               class="block uppercase tracking-wide text-gray-700 text-xs font-bold mb-2">
+                            Category
+                        </label>
+                        <div class="relative">
+                            <select name="category" id="id_category"
+                                    class="block appearance-none w-full bg-gray-200 border border-gray-200 text-gray-700 py-3 px-4 pr-8 rounded leading-tight focus:outline-none focus:bg-white focus:border-gray-500">
+                                <option value="" disabled selected>Select an option</option>
+                                <option value="F">Food</option>
+                                <option value="D">Drink</option>
+                                <option value="O">Other</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flex flex-wrap -mx-3 mb-6">
+                    <div class="w-full px-3">
+                        <label for="id_quantity"
+                               class="block uppercase tracking-wide text-gray-700 text-xs font-bold mb-2">
+                            Quantity?
+                        </label>
+                        <input type="text" name="quantity" id="id_quantity"
+                               class="appearance-none block w-full bg-gray-200 text-gray-700 border border-gray-200 rounded py-3 px-4 leading-tight focus:outline-none focus:bg-white focus:border-gray-500"
+                               placeholder="Quantity">
+                    </div>
+                </div>
+
+                <div class="flex flex-wrap -mx-3 mb-6">
+                    <div class="w-full px-3">
+                        <label for="id_description"
+                               class="block uppercase tracking-wide text-gray-700 text-xs font-bold mb-2">
+                            Description?
+                        </label>
+                        <textarea name="description" id="id_description"
+                                  class="resize-none appearance-none block w-full bg-gray-200 text-gray-700 border border-gray-200 rounded py-3 px-4 leading-tight focus:outline-none focus:bg-white focus:border-gray-500"
+                                  placeholder="Enter a description..."></textarea>
+                    </div>
+                </div>
+
+                <!-- Hidden Person ID -->
+                <input type="hidden" name="person_id" value="{{ person.id }}">
+
+                <!-- Claim Checkbox -->
+                <div class="flex items-center mb-4">
+                    <input type="checkbox" name="claim" id="id_claim" class="h-4 w-4 text-blue-600" checked>
+                    <label for="id_claim" class="ml-2 block text-sm text-gray-900">
+                        Claim
+                    </label>
+                </div>
+
+                <div class="flex justify-end">
+                    <button type="submit"
+                            class="shadow bg-purple-500 hover:bg-purple-400 focus:shadow-outline focus:outline-none text-white font-bold py-2 px-4 rounded">
+                        Add
+                    </button>
+                </div>
+            </form>
+        </section>
+    {% endif %}
+</div>
