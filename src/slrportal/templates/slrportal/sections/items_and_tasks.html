@@ -35,7 +35,7 @@
                         </td>
                         <td class="px-5 py-5 border-b border-gray-200 bg-white text-sm">
                             {% if item.assigned_to.count %}
-                                {% if person and person in item.assigned_to.all %}
+                                {% if invite and person in item.assigned_to.all %}
                                     <form action="{% url 'unassign_item' item_id=item.id person_id=person.id %}"
                                           method="POST">
                                         <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
@@ -48,7 +48,7 @@
                                     <span class="inline-flex text-xs leading-5 font-semibold rounded-full text-right"
                                           style="background-color: #C6F6D5; color: #38A169;">Assigned</span>
                                 {% endif %}
-                            {% elif person %}
+                            {% elif invite %}
                                 <form action="{% url 'assign_item' item_id=item.id person_id=person.id %}"
                                       method="POST">
                                     <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
@@ -75,7 +75,7 @@
             </table>
         </section>
     {% endfor %}
-    {% if person %}
+    {% if invite %}
         <section>
             <h2 class="text-2xl font-bold mb-2">Add Item</h2>
             <form action="{% url 'add_item' edition=party.edition %}" method="post" class="space-y-4">

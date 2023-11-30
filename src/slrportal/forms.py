@@ -19,3 +19,14 @@ class ItemForm(forms.ModelForm):
     class Meta:
         model = Item
         fields = ['name', 'category', 'quantity', 'description']
+
+
+class RsvpForm(forms.Form):
+    CHOICES = [
+        ('Y', 'Yes'),
+        ('N', 'No'),
+        ('M', 'Maybe'),
+    ]
+
+    person_id = forms.CharField(widget=forms.HiddenInput())
+    rsvp = forms.ChoiceField(choices=CHOICES, label='RSVP')

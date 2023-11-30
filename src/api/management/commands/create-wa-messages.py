@@ -16,7 +16,9 @@ class Command(BaseCommand):
     def handle(self, *args: t.Any, **options: t.Any) -> None:
         party = Party.objects.get(edition=options["edition"])
 
-        msg_template = "Hi!\n\nThis is your **personal** link for our upcoming party!\n\n {link}"
+        msg_template = ("Hi!\n\n"
+                        "This is your **personal** link for our upcoming party!\n\n {link}\n\n"
+                        "Don't share this link with anyone else, it's only yours!")
 
         for person in party.people():
             link = f"https://sinsloveandrainbows.eu/party/{party.edition}?visitor_id={str(person.id)}"

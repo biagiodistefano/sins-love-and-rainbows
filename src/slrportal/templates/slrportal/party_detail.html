@@ -44,9 +44,49 @@
             <!-- Additional Details: Invite Summary, Links, etc. -->
             {% if person %}
                 <div class="flex justify-center">
-                <h4 class="text-2xl font-bold text-center mt-4">Hello, {{ person.get_short_name }}!</h4>
+                    <h4 class="text-2xl font-bold text-center mt-4">Hello, {{ person.get_short_name }}!</h4>
                 </div>
+
+                {% if invite %}
+                    <div class="text-center mt-4">
+
+                        <p>You are invited!</p>
+                        {% if invite.status %}
+                            <p>You have RSVP'd <b>{{ invite.get_status_display }}</b></p>
+                        {% else %}
+                            <p>You have <b>not</b> RSVP'd yet</p>
+                            <p>Will you join the Party?</p>
+                        {% endif %}
+
+                        <form action="{% url 'update_rsvp' edition=party.edition %}" method="post" class="mt-4">
+                            {% csrf_token %}
+                            <div class="flex justify-center space-x-4">
+                                <input type="hidden" value="{{ person.id }}" name="person_id">
+                                <label>
+                                    <input type="radio" name="rsvp" value="Y" {% if invite.status == 'Y' %} checked {% endif %}>
+                                    Yes
+                                </label>
+                                <label>
+                                    <input type="radio" name="rsvp" value="N" {% if invite.status == 'N' %} checked {% endif %}>
+                                    No
+                                </label>
+                                <label>
+                                    <input type="radio" name="rsvp" value="M" {% if invite.status == 'M' %} checked {% endif %}>
+                                    Maybe
+                                </label>
+                            </div>
+                            <button type="submit"
+                                    class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded mt-4">
+                                Update RSVP
+                            </button>
+                        </form>
+                    </div>
+                {% else %}
+                    <p class="text-center mt-4">You are <b>not</b> invited to this party.</p>
+                {% endif %}
             {% endif %}
+
+
 
             <div class="container mx-auto px-4 py-6">
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4 overflow-auto">

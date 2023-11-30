@@ -10,4 +10,5 @@ urlpatterns = [
     path('item/<str:item_id>/assign/<str:person_id>', views.assign_item, name='assign_item'),
     path('item/<str:item_id>/unassign/<str:person_id>', views.unassign_item, name='unassign_item'),
     path('party/<str:edition>/add-item', views.add_item, name='add_item'),
+    path('party/<str:edition>/rsvp', views.update_rsvp, name='update_rsvp'),
 ]
