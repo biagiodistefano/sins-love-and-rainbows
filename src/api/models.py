@@ -210,6 +210,7 @@ class Allergy(models.Model):
 
 class Message(models.Model):
     party = models.ForeignKey(Party, on_delete=models.CASCADE)
+    title = models.CharField(max_length=30, db_index=True, null=True, blank=True)
     text = MarkdownField(rendered_field='text_rendered', validator=VALIDATOR_STANDARD)
     text_rendered = RenderedMarkdownField()
     sent_at = models.DateTimeField(db_index=True, null=True, blank=True)
@@ -232,6 +233,13 @@ class Message(models.Model):
         sent_to_count = self.sent_to.count()
         not_sent_to_count = self.party.invite_set.all().count() - sent_to_count
         return f"{sent_to_count}/{not_sent_to_count} sent/not sent"
+
+    def __str__(self):
+        if self.title:
+            title = self.title
+        else:
+            title = self.text[:30]
+        return f"{title} @ {self.party}"
 
 
 class ExternalLink(models.Model):
