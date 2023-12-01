@@ -213,7 +213,7 @@ class Message(models.Model):
     text = MarkdownField(rendered_field='text_rendered', validator=VALIDATOR_STANDARD)
     text_rendered = RenderedMarkdownField()
     sent_at = models.DateTimeField(db_index=True, null=True, blank=True)
-    sent_to = models.ManyToManyField(Person)
+    sent_to = models.ManyToManyField(Person, blank=True)
 
     @property
     def party_edition(self) -> str:
