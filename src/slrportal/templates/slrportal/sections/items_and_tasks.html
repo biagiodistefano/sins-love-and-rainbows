@@ -78,6 +78,8 @@
     {% if invite %}
         <section>
             <h2 class="text-2xl font-bold mb-2">Add Item</h2>
+            <p>If possible, take into account the following allergies/intolerances: {{ party.allergy_list|join:", " }}</p>
+
             <form action="{% url 'add_item' edition=party.edition %}" method="post" class="space-y-4">
                 {% csrf_token %}
                 <div class="flex flex-wrap -mx-3 mb-6">
@@ -105,6 +107,7 @@
                             </select>
                         </div>
                     </div>
+
                 </div>
 
                 <div class="flex flex-wrap -mx-3 mb-6">

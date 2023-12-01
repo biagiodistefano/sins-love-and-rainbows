@@ -61,7 +61,7 @@ class Party(models.Model):
         Invite.objects.filter(person=person, party=self).delete()
 
     def allergy_list(self) -> list[str]:
-        invites = self.invite_set.filter(status__in=('Y', 'M')).prefetch_related('person__allergy_set__ingredient')
+        invites = self.invite_set.filter(status='Y').prefetch_related('person__allergy_set__ingredient')
         return list(
             set(
                 [allergy.ingredient.name for invite in invites for allergy in
