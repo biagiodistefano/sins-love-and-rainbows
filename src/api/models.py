@@ -35,7 +35,7 @@ class Person(AbstractUser):
         if self.phone_number is None:
             return None
         party = Party.get_next()
-        if not party:
+        if not party or not self.is_invited_to(party):
             return None
         link = f"https://sinsloveandrainbows.eu/party/{party.edition}?visitor_id={str(self.id)}"
         msg = self.msg_template.format(link=link)
@@ -58,6 +58,9 @@ class Person(AbstractUser):
     @property
     def full_name(self) -> str:
         return self.get_full_name()
+
+    def is_invited_to(self, party: 'Party') -> bool:
+        return party.invite_set.filter(person=self).exists()
 
 
 class Party(models.Model):
@@ -149,6 +152,9 @@ class Party(models.Model):
             ("Drink", self.drink_items()),
             ("Other", self.other_items()),
         ]
+
+    def is_invited(self, person: Person) -> bool:
+        return self.invite_set.filter(person=person).exists()
 
     def __str__(self):
         return self.name
