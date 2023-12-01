@@ -26,4 +26,5 @@ jobs:
           cd src
           python manage.py migrate
           python manage.py collectstatic --noinput
-          systemctl restart sinsloveandrainbows
+          sudo systemctl restart sinsloveandrainbows
+          echo "Successful deployment $(date)" >> deployments.info

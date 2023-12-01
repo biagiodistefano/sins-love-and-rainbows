@@ -133,3 +133,5 @@ dmypy.json
 !default/project_template/project_name/.env
 *.sqlite3
 /src/static
+/src/deployments.info
+/src/media/files
