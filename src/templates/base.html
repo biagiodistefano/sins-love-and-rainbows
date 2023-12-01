@@ -6,18 +6,25 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <title>{% block title %}Sins, Love and Rainbows{% endblock %}</title>
     {% block head %}
-    <!-- Base template styles (if any) go here -->
+        <!-- Base template styles (if any) go here -->
     {% endblock %}
 
 </head>
 <body class="bg-gray-100">
-    {% block content %}
+{% if request.user.is_staff %}
+    <div class="bg-red-500 text-white text-center py-2">
+        <p>You are logged in as an admin.
+            <a href="{% url 'admin:index' %}" class="text-blue-600 hover:text-blue-800">Go to admin panel</a>
+        </p>
+    </div>
+{% endif %}
+{% block content %}
     <!-- Main content will go here -->
-    {% endblock %}
+{% endblock %}
 
-    <!-- Footer can be added here if needed -->
-    {% block scripts %}
+<!-- Footer can be added here if needed -->
+{% block scripts %}
     <!-- Base template scripts (if any) go here -->
-    {% endblock %}
+{% endblock %}
 </body>
 </html>
