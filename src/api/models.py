@@ -302,7 +302,7 @@ class PartyFile(models.Model):
 def create_invite(sender, instance, created, **kwargs):
     if created:
         for person in Person.objects.all():
-            Invite.objects.create(person=person, party=instance, status='M')
+            Invite.objects.create(person=person, party=instance, status=None)
 
 
 def generate_short_url() -> str:

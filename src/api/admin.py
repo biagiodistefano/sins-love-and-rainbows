@@ -4,9 +4,11 @@ from django.apps import apps
 from django.contrib import admin
 from django.urls import reverse
 from django.utils.html import format_html
-# from django import forms
 
-from .models import Party, Invite, Person, Allergy, Item, PartyFile
+from .models import Allergy, Invite, Item, Party, PartyFile, Person
+
+
+# from django import forms
 
 
 class AllergyInline(admin.TabularInline):
@@ -23,7 +25,7 @@ class PersonAdmin(admin.ModelAdmin):
     @admin.display(description='Message')
     def whatsapp_message(self, obj: Person) -> str:
         if whatsapp_message_url := obj.whatsapp_message_url():
-            return format_html(f'<a target="_blank" href="{whatsapp_message_url}">Whatsapp</a>',)
+            return format_html(f'<a target="_blank" href="{whatsapp_message_url}">Message on WhatsApp</a>', )
         return ""
 
     @admin.display(description='Allergies')
