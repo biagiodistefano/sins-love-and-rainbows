@@ -1,13 +1,15 @@
+import urllib.parse
 import uuid
 from typing import Optional
 
+from django.contrib.auth.models import AbstractUser
 from django.db import models
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 from django.utils import timezone
+from django.utils.translation import gettext_lazy as _
 from markdownfield.models import MarkdownField, RenderedMarkdownField
 from markdownfield.validators import VALIDATOR_STANDARD
-from django.contrib.auth.models import AbstractUser
 
 
 class LowerCharField(models.CharField):
@@ -18,9 +20,33 @@ class LowerCharField(models.CharField):
 
 class Person(AbstractUser):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4)
+    password = models.CharField(_('password'), max_length=128, blank=True, null=True)
     phone_number = models.CharField(null=True, blank=True, db_index=True, max_length=128)
     from_abroad = models.BooleanField(default=False, db_index=True)
     in_broadcast = models.BooleanField(default=True, db_index=True)
+
+    msg_template = (
+        "Hi!\n\n"
+        "This is your *personal* link for our upcoming party!\n {link}\n\n"
+        "Don't share this link with anyone else, it's only yours!"
+    )
+
+    def whatsapp_message_url(self) -> str | None:
+        if not self.in_broadcast or not self.phone_number:
+            return None
+        party = Party.get_next()
+        if not party:
+            return None
+        link = f"https://sinsloveandrainbows.eu/party/{party.edition}?visitor_id={str(self.id)}"
+        msg = self.msg_template.format(link=link)
+        urlencoded_msg = urllib.parse.quote(msg)
+        return f"https://wa.me/{self.clean_phone_number}?text={urlencoded_msg}"
+
+    @property
+    def clean_phone_number(self) -> str | None:
+        if not self.phone_number:
+            return None
+        return self.phone_number.replace("+", "").replace(" ", "")
 
     def __str__(self):
         return self.get_full_name()
@@ -47,7 +73,7 @@ class Party(models.Model):
     def get_next(cls) -> Optional['Party']:
         return cls.objects.filter(date_and_time__gte=timezone.now(), closed=False).earliest(
             'date_and_time'
-            ).first()
+        )
 
     @property
     def logo_url(self) -> str | None:

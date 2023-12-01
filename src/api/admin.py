@@ -18,7 +18,13 @@ class PersonAdmin(admin.ModelAdmin):
 
     inlines = [AllergyInline]
 
-    list_display = ('first_name', 'in_broadcast', 'from_abroad', 'allergies_list')
+    list_display = ('first_name', 'in_broadcast', 'from_abroad', 'whatsapp_message', 'allergies_list')
+
+    @admin.display(description='Message')
+    def whatsapp_message(self, obj: Person) -> str:
+        if whatsapp_message_url := obj.whatsapp_message_url():
+            return format_html(f'<a target="_blank" href="{whatsapp_message_url}">Whatsapp</a>',)
+        return ""
 
     @admin.display(description='Allergies')
     def allergies_list(self, obj: Person) -> str:
