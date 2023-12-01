@@ -32,7 +32,7 @@ class Person(AbstractUser):
     )
 
     def whatsapp_message_url(self) -> str | None:
-        if not self.in_broadcast or not self.phone_number:
+        if self.phone_number:
             return None
         party = Party.get_next()
         if not party:
