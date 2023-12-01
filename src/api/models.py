@@ -55,6 +55,10 @@ class Person(AbstractUser):
         verbose_name_plural = 'people'
         ordering = ['first_name', 'last_name']
 
+    @property
+    def full_name(self) -> str:
+        return self.get_full_name()
+
 
 class Party(models.Model):
     name = models.CharField(max_length=30, db_index=True, unique=True)
