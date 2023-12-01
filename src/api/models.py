@@ -163,7 +163,7 @@ class Invite(models.Model):
     party = models.ForeignKey(Party, on_delete=models.CASCADE)
     status = models.CharField(
         max_length=1, choices=((None, 'No response'), ('Y', 'Yes'), ('N', 'No'), ('M', 'Maybe')), default=None,
-        db_index=True, null=True
+        db_index=True, null=True, blank=True
     )  # noqa: E501
     last_updated = models.DateTimeField(auto_now=True, db_index=True)
 
