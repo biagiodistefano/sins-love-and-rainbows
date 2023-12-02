@@ -10,7 +10,6 @@ from .forms import ItemForm, RsvpForm
 
 
 def home(request: HttpRequest) -> HttpResponse:
-    print("user", request.user)
     return render(request, 'slrportal/index.html', {'user': request.user})
 
 
