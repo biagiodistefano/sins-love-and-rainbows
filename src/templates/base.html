@@ -27,11 +27,18 @@
     <!-- Base template scripts (if any) go here -->
 {% endblock %}
 <!-- cookie info banner-->
-<div class="fixed bottom-0 w-full bg-gray-200 text-center py-2">
+<<div class="fixed bottom-0 w-full bg-gray-200 text-center py-2" id="banner">
+    <button id="closeBanner" class="absolute top-0 right-0 p-2 text-lg">X</button>
     <p class="text-gray-600 text-sm">I'm using technical cookies and there's nothing you can do about it.
         <a href="https://www.youtube.com/watch?v=dQw4w9WgXcQ" class="text-blue-600 hover:text-blue-800">Learn more</a>
     </p>
 </div>
+<script>
+    document.getElementById('closeBanner').addEventListener('click', function() {
+        document.getElementById('banner').style.display = 'none';
+    });
+</script>
+
 
 </body>
 </html>
