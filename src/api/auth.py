@@ -21,5 +21,3 @@ if USE_AUTH:
     AUTH = [ApiKey(), JWTAuth()]
 else:
     AUTH = NOT_SET
-
-print("AUTH:", AUTH)

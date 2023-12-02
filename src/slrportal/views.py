@@ -1,14 +1,16 @@
 from django.core import exceptions
-from django.http import Http404, HttpResponse, HttpResponseNotAllowed, HttpResponseBadRequest
+from django.db import transaction
+from django.http import Http404, HttpResponse, HttpResponseBadRequest, HttpResponseNotAllowed
 from django.http.request import HttpRequest
 from django.shortcuts import get_object_or_404, redirect, render, reverse
 from django.utils import timezone
-from django.db import transaction
+
 from api import models
 from .forms import ItemForm, RsvpForm
 
 
 def home(request: HttpRequest) -> HttpResponse:
+    print("user", request.user)
     return render(request, 'slrportal/index.html', {'user': request.user})
 
 
@@ -24,21 +26,16 @@ def get_next_party(request: HttpRequest) -> HttpResponse:
         )
     except models.Party.DoesNotExist:
         raise Http404("No upcoming parties found.")
-
-    return redirect('party', edition=next_party.edition)
+    url = reverse('party', kwargs={"edition": next_party.edition})
+    return redirect(url)
 
 
 def party_detail(request: HttpRequest, edition: str) -> HttpResponse:
     party = get_object_or_404(models.Party, edition=edition)
-    try:
-        visitor_id = request.GET.get('visitor_id', None)
-        person = models.Person.objects.get(id=visitor_id)
-    except (models.Person.DoesNotExist, exceptions.ValidationError):
-        person = None
+    invite = None
     if request.user.is_authenticated:
-        person = request.user
-    invite = models.Invite.objects.filter(party=party, person=person).first()
-    context = {'party': party, 'person': person, 'invite': invite}
+        invite = models.Invite.objects.filter(party=party, person=request.user).first()
+    context = {'party': party, 'person': request.user, 'invite': invite}
     return render(request, 'slrportal/party_detail.html', context)
 
 
@@ -54,7 +51,7 @@ def assign_item(request: HttpRequest, item_id: str, person_id: str) -> HttpRespo
         return HttpResponseBadRequest("Not attending")
     task.assigned_to.add(person)
     task.save()
-    url = reverse("party", kwargs={"edition": task.party.edition}) + f"?visitor_id={person.id}"
+    url = reverse("party", kwargs={"edition": task.party.edition})
     return redirect(url)
 
 
@@ -65,7 +62,7 @@ def unassign_item(request: HttpRequest, item_id: str, person_id: str) -> HttpRes
     person = get_object_or_404(models.Person, id=person_id)
     task.assigned_to.remove(person)
     task.save()
-    url = reverse("party", kwargs={"edition": task.party.edition}) + f"?visitor_id={person.id}"
+    url = reverse("party", kwargs={"edition": task.party.edition})
     return redirect(url)
 
 
@@ -88,7 +85,7 @@ def add_item(request: HttpRequest, edition: str) -> HttpResponse:
     if invite.status == "N":
         return HttpResponseBadRequest("Not attending")
     # You can redirect to the party detail page or wherever is appropriate
-    url = reverse("party", kwargs={"edition": party.edition}) + f"?visitor_id={person_id}"
+    url = reverse("party", kwargs={"edition": party.edition})
     if form.cleaned_data["claim"]:
         item.assigned_to.add(form.cleaned_data["person_id"])
     return redirect(url)
@@ -116,5 +113,5 @@ def update_rsvp(request: HttpRequest, edition: str) -> HttpResponse:
             for item in items:
                 item.assigned_to.remove(person)
                 item.save()
-    url = reverse("party", kwargs={"edition": party.edition}) + f"?visitor_id={person.id}"
+    url = reverse("party", kwargs={"edition": party.edition})
     return redirect(url)

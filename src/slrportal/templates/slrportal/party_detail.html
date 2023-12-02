@@ -29,7 +29,7 @@
             {% endif %}
             <h2 class="text-2xl font-bold text-center mt-4">{{ party.name }}</h2>
             <p class="text-center text-gray-600">{{ party.date_and_time|date:"D, d M Y @ H:i" }}</p>
-            {% if person %}
+            {% if person.is_authenticated %}
                 <p class="text-center mt-2"><b>{{ party.location }}</b></p>
             {% endif %}
             <p class="text-center mt-2">Confirmed: <b>{{ party.yes_count }}</b> Maybe: <b>{{ party.maybe_count }}</b>
@@ -42,7 +42,7 @@
             </div>
 
             <!-- Additional Details: Invite Summary, Links, etc. -->
-            {% if person %}
+            {% if person.is_authenticated %}
                 <div class="flex justify-center">
                     <h4 class="text-2xl font-bold text-center mt-4">Hello, {{ person.get_short_name }}!</h4>
                 </div>
