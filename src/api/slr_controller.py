@@ -141,7 +141,29 @@ class SLRController:  # type: ignore
                 response={201: schema.ExternalLinkSchema})
     def create_external_link(self, request: HttpRequest, edition: str, external_link: schema.ExternalLinkSchemaCreate):
         party = get_object_or_404(models.Party, edition=edition)
-        return 201, models.ExternalLink.objects.create(party=party, **external_link.dict())
+        instance = models.ExternalLink.objects.create(**external_link.dict(exclude_unset=True))
+        party.externallink_set.add(instance)
+        return 201, instance
+
+    @route.post(
+        "/party/{edition}/external-link/{external_link_id}/assign", tags=["party", "external_links"],
+        response={200: None}
+        )
+    def assign_external_link_to_party(self, request: HttpRequest, edition: str, external_link_id: int):
+        party = get_object_or_404(models.Party, edition=edition)
+        external_link = get_object_or_404(models.ExternalLink, id=external_link_id)
+        party.externallink_set.add(external_link)
+        return 200, None
+
+    @route.delete(
+        "/party/{edition}/external-link/{external_link_id}/assign", tags=["party", "external_links"],
+        response={200: None}
+    )
+    def unassign_external_link_from_party(self, request: HttpRequest, edition: str, external_link_id: int):
+        party = get_object_or_404(models.Party, edition=edition)
+        external_link = get_object_or_404(models.ExternalLink, id=external_link_id)
+        party.externallink_set.remove(external_link)
+        return 200, None
 
     @route.get("/party/{edition}/external-link/all", tags=["party", "external_links"],
                response={200: list[schema.ExternalLinkSchema]})
@@ -319,9 +341,9 @@ class SLRController:  # type: ignore
         person = get_object_or_404(models.Person, id=person_id)
         invite = party.invite_set.filter(person=person).first()
         if invite is None:
-            return 400, {"message": f"{person.name} is not invited to this party"}
+            return 400, {"message": f"{person.get_full_name()} is not invited to this party"}
         if invite.status == "N":
-            return 400, {"message": f"{person.name} has declined the invitation"}
+            return 400, {"message": f"{person.get_full_name()} has declined the invitation"}
         item.assigned_to.add(person)
         return 201, item
 
@@ -348,7 +370,7 @@ class SLRController:  # type: ignore
     @staticmethod
     def update_object(model: t.Type[models.models.Model], data: Schema, **kwargs) -> models.models.Model:
         instance = get_object_or_404(model, **kwargs)
-        for key, value in data.dict(exclude_none=True).items():
+        for key, value in data.dict(exclude_unset=True).items():
             setattr(instance, key, value)
         instance.save()
         return instance

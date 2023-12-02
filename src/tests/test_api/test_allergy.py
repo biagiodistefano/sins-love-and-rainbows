@@ -30,7 +30,7 @@ def test_allergy(api_client: Client) -> None:
     for name in ["Tizio", "Caio", "Sempronio"]:
         create = api_client.post(
             "/api/person/create",
-            data=json.dumps({"name": name, "from_abroad": False, "in_broadcast": True}),
+            data=json.dumps({"username": name, "first_name": name, "from_abroad": False, "in_broadcast": True}),
             content_type="application/json",
         )
         assert create.status_code == 201
@@ -40,7 +40,7 @@ def test_allergy(api_client: Client) -> None:
     for random_person in ["Giovanni", "Marco", "Luca"]:
         create = api_client.post(
             "/api/person/create",
-            data=json.dumps({"name": random_person, "from_abroad": False, "in_broadcast": True}),
+            data=json.dumps({"username": random_person, "first_name": random_person, "from_abroad": False, "in_broadcast": True}),
             content_type="application/json",
         )
         assert create.status_code == 201

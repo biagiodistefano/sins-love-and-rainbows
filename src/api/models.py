@@ -120,6 +120,9 @@ class Party(models.Model):
     def no_people(self) -> models.QuerySet:
         return self.invite_set.filter(status='N').prefetch_related('person')
 
+    def no_response_people(self) -> models.QuerySet:
+        return self.invite_set.filter(status=None).prefetch_related('person')
+
     def yes_count(self) -> int:
         return self.yes_people().count()
 
@@ -129,11 +132,15 @@ class Party(models.Model):
     def maybe_count(self) -> int:
         return self.maybe_people().count()
 
+    def no_response_count(self) -> int:
+        return self.no_response_people().count()
+
     def invite_summary(self) -> dict[str, int]:
         return {
             "yes": self.yes_count(),
             "maybe": self.maybe_count(),
             "no": self.no_count(),
+            "no_response": self.no_response_count(),
             "from_abroad": self.from_abroad_count(),
         }
 

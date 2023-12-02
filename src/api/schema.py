@@ -5,15 +5,21 @@ from pydantic import Field, UUID4, field_validator
 
 
 class PersonSchemaCreate(Schema):
-    name: str = Field(..., min_length=2, max_length=30)
+    username: str = Field(..., min_length=3, max_length=30)
+    first_name: str = Field("", max_length=30)
+    last_name: str = Field("", max_length=30)
     from_abroad: bool
     in_broadcast: bool
+    phone_number: str | None = Field(None, min_length=2, max_length=30)
 
 
 class PersonSchemaUpdate(Schema):
-    name: str | None = Field(None, min_length=2, max_length=30)
-    from_abroad: bool | None
-    in_broadcast: bool | None
+    username: str | None = Field(None, min_length=2, max_length=30)
+    first_name: str | None = Field(None, max_length=30)
+    last_name: str | None = Field(None, max_length=30)
+    from_abroad: bool | None = None
+    in_broadcast: bool | None = None
+    phone_number: str | None = Field(None, min_length=2, max_length=30)
 
 
 class PersonSchema(PersonSchemaCreate):
@@ -22,7 +28,7 @@ class PersonSchema(PersonSchemaCreate):
 
 class InviteSchema(Schema):
     person: PersonSchema
-    status: str = Field(..., min_length=1, max_length=1, pattern="^[YMN]$")
+    status: str | None = Field(None, min_length=1, max_length=1, pattern="^[YMN]$")
     last_updated: datetime
     party_edition: str = Field(..., min_length=1, max_length=30)
 
@@ -48,6 +54,7 @@ class InviteSummarySchema(Schema):
     yes: int
     maybe: int
     no: int
+    no_response: int
     from_abroad: int
 
 
@@ -65,12 +72,11 @@ class ExternalLinkSchemaCreate(Schema):
 
 class ExternalLinkSchema(ExternalLinkSchemaCreate):
     id: int
-    party_edition: str = Field(..., min_length=1, max_length=30)
 
 
 class ExternalLinkSchemaUpdate(Schema):
     name: str | None = Field(None, min_length=2, max_length=30)
-    url: str | None
+    url: str | None = None
     description: str | None = Field(None, min_length=2, max_length=250)
 
 
@@ -91,7 +97,7 @@ class ItemSchemaCreate(Schema):
     name: str = Field(..., min_length=2, max_length=120)
     description: str | None = Field(None, min_length=2, max_length=250)
     quantity: str | None = Field(None, min_length=1, max_length=30)
-    url: str | None
+    url: str | None = None
 
 
 class ItemSchemaUpdate(ItemSchemaCreate):
@@ -120,6 +126,7 @@ class PartySchemaCreate(Schema):
     location: str | None = Field(None, min_length=2, max_length=120)
     description: str | None
 
+    @classmethod
     @field_validator("edition")
     def validate_lowercase(cls, value: str) -> str:
         return value.lower()

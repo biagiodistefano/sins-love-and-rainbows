@@ -208,7 +208,7 @@ def test_item_ingredients(api_client: Client) -> None:
 def test_item_people(api_client: Client) -> None:
     create_person = api_client.post(
         "/api/person/create",
-        data=json.dumps({"name": "John Doe", "from_abroad": False, "in_broadcast": True}),
+        data=json.dumps({"username": "John Doe", "first_name": "John", "from_abroad": False, "in_broadcast": True}),
         content_type="application/json",
     )
     assert create_person.status_code == 201
@@ -234,7 +234,7 @@ def test_item_people(api_client: Client) -> None:
 
     person_2 = api_client.post(
         "/api/person/create",
-        data=json.dumps({"name": "Jane Doe", "from_abroad": False, "in_broadcast": True}),
+        data=json.dumps({"username": "Jane Doe", "first_name": "John", "from_abroad": False, "in_broadcast": True}),
         content_type="application/json",
     )
     assert person_2.status_code == 201

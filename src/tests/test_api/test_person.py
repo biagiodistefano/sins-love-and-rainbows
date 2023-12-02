@@ -8,7 +8,7 @@ from django.test.client import Client
 def test_person(api_client: Client) -> None:
     create = api_client.post(
         "/api/person/create",
-        data=json.dumps({"name": "John Doe", "from_abroad": False, "in_broadcast": True}),
+        data=json.dumps({"username": "John Doe", "first_name": "John", "from_abroad": False, "in_broadcast": True}),
         content_type="application/json",
     )
     assert create.status_code == 201

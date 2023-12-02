@@ -2,14 +2,16 @@ import json
 
 import pytest
 from django.test.client import Client
+from api.models import Person
 
 
 @pytest.mark.django_db
 def test_party(api_client: Client) -> None:
+    Person.objects.all().delete()
     for name in ["Tizio", "Caio", "Sempronio"]:
         create = api_client.post(
             "/api/person/create",
-            data=json.dumps({"name": name, "from_abroad": False, "in_broadcast": True}),
+            data=json.dumps({"username": name, "first_name": "name", "from_abroad": False, "in_broadcast": True}),
             content_type="application/json",
         )
         assert create.status_code == 201
@@ -30,7 +32,7 @@ def test_party(api_client: Client) -> None:
     assert create.status_code == 201
     party = create.json()
 
-    assert party["invite_summary"] == {"yes": 0, "maybe": 3, "no": 0, "from_abroad": 0}
+    assert party["invite_summary"] == {"yes": 0, "maybe": 0, "no": 0, "no_response": 3, "from_abroad": 0}
     assert len(party["invite_set"]) == 3
 
     party_edition = party["edition"]
@@ -67,6 +69,7 @@ def test_party(api_client: Client) -> None:
 
 @pytest.mark.django_db
 def test_party_invite(api_client: Client) -> None:
+    Person.objects.all().delete()
     create = api_client.post(
         "/api/party/create",
         data=json.dumps(
@@ -84,14 +87,14 @@ def test_party_invite(api_client: Client) -> None:
     party = create.json()
     party_edition = party["edition"]
 
-    assert party["invite_summary"] == {"yes": 0, "maybe": 0, "no": 0, "from_abroad": 0}
+    assert party["invite_summary"] == {"yes": 0, "maybe": 0, "no": 0, "no_response": 0,  "from_abroad": 0}
     assert len(party["invite_set"]) == 0
 
     people_ids = []
     for name in ["Tizio", "Caio", "Sempronio"]:
         create = api_client.post(
             "/api/person/create",
-            data=json.dumps({"name": name, "from_abroad": False, "in_broadcast": True}),
+            data=json.dumps({"username": name, "first_name": "name", "from_abroad": False, "in_broadcast": True}),
             content_type="application/json",
         )
         assert create.status_code == 201
@@ -106,7 +109,7 @@ def test_party_invite(api_client: Client) -> None:
     read = api_client.get("/api/party/" + party_edition)
     assert read.status_code == 200
     party = read.json()
-    assert party["invite_summary"] == {"yes": 0, "maybe": 3, "no": 0, "from_abroad": 0}
+    assert party["invite_summary"] == {"yes": 0, "maybe": 0, "no": 0, "no_response": 3, "from_abroad": 0}
     assert len(party["invite_set"]) == 3
 
     party_invites = api_client.get(f"/api/party/{party_edition}/invite/all")
@@ -131,21 +134,21 @@ def test_party_invite(api_client: Client) -> None:
     read = api_client.get("/api/party/" + party_edition)
     assert read.status_code == 200
     party = read.json()
-    assert party["invite_summary"] == {"yes": 1, "maybe": 1, "no": 1, "from_abroad": 1}
+    assert party["invite_summary"] == {"yes": 1, "maybe": 1, "no": 1, "no_response": 0, "from_abroad": 1}
 
     delete = api_client.delete(f"/api/party/{party_edition}/invite/{person_0_id}")
     assert delete.status_code == 204
     read = api_client.get("/api/party/" + party_edition)
     assert read.status_code == 200
     party = read.json()
-    assert party["invite_summary"] == {"yes": 0, "maybe": 1, "no": 1, "from_abroad": 0}
+    assert party["invite_summary"] == {"yes": 0, "maybe": 1, "no": 1, "no_response": 0, "from_abroad": 0}
 
     update = api_client.put(f"/api/party/{party_edition}/invite/{person_0_id}/y")
     assert update.status_code == 200
     read = api_client.get("/api/party/" + party_edition)
     assert read.status_code == 200
     party = read.json()
-    assert party["invite_summary"] == {"yes": 1, "maybe": 1, "no": 1, "from_abroad": 1}
+    assert party["invite_summary"] == {"yes": 1, "maybe": 1, "no": 1, "no_response": 0, "from_abroad": 1}
 
     create = api_client.post(
         "/api/ingredient/create",
