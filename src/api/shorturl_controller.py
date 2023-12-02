@@ -2,16 +2,13 @@ import typing as t
 
 from django.http.request import HttpRequest
 from django.shortcuts import get_object_or_404
-from ninja.constants import NOT_SET
 from ninja_extra import api_controller, route
-from ninja_jwt.authentication import JWTAuth
 
-from . import models, schema, settings
-
-AUTH = JWTAuth() if settings.USE_AUTH else NOT_SET
+from . import models, schema
+from .auth import AUTH
 
 
-@api_controller(prefix_or_class="/s", tags=["Short URL"], auth=JWTAuth())
+@api_controller(prefix_or_class="/s", tags=["Short URL"], auth=AUTH)
 class ShortURLController:  # type: ignore
 
     @route.post("/create", response={201: schema.ShortURLSchema})

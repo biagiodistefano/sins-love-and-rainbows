@@ -191,7 +191,7 @@ if DEBUG:
 
 DEFAULT_AUTO_FIELD = 'django.db.models.AutoField'
 
-SLR_USE_AUTH = config("SLR_USE_AUTH", default=False, cast=bool)
+SLR_USE_AUTH = config("SLR_USE_AUTH", default=True, cast=bool)
 
 DATA_UPLOAD_MAX_MEMORY_SIZE = int((
     config("DATA_UPLOAD_MAX_SIZE_MB", cast=float, default=10) * 1024 * 1024

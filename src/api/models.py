@@ -333,3 +333,14 @@ class ShortUrl(models.Model):
 
     def __str__(self):
         return f"{self.short_url} -> {self.url}"
+
+
+class ApiClient(models.Model):
+    name = models.CharField(max_length=30, db_index=True)
+    api_key = models.UUIDField(primary_key=True, default=uuid.uuid4)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    active = models.BooleanField(default=True, db_index=True)
+
+    def __str__(self):
+        return self.name

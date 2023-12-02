@@ -1,11 +1,11 @@
 from ninja_extra import NinjaExtraAPI
-
-from .slr_controller import SLRController
-from .shorturl_controller import ShortURLController
 from ninja_jwt.controller import NinjaJWTDefaultController
 
+from .shorturl_controller import ShortURLController
+from .slr_controller import SLRController
 
-API_VERSION = "v0.0.1"
+
+API_VERSION = "v0.0.2"
 
 api = NinjaExtraAPI(
     title="Sins, Love and Rainbows API",
@@ -18,7 +18,6 @@ api = NinjaExtraAPI(
         {"url": "https://www.sinsloveandrainbows.eu", "description": "Production Server"}
     ]
 )
-
 
 api.register_controllers(
     NinjaJWTDefaultController,

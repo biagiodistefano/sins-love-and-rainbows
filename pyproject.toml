@@ -33,7 +33,7 @@ requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
 
 [tool.pytest.ini_options]
-DJANGO_SETTINGS_MODULE = "biagiodistefano.settings"
+DJANGO_SETTINGS_MODULE = "sinsloveandrainbows.settings"
 
 
 [tool.coverage.html]
