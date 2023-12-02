@@ -14,8 +14,8 @@ api = NinjaExtraAPI(
     app_name=f"sinsloveandrainbows-api-{API_VERSION}",
     urls_namespace="slr-api",
     servers=[
-        {"url": "http://localhost:8000", "description": "Development Server"},
-        {"url": "https://www.sinsloveandrainbows.eu", "description": "Production Server"}
+        {"url": "https://sinsloveandrainbows.eu", "description": "Production Server"},
+        # {"url": "http://localhost:8000", "description": "Development Server"},
     ]
 )
 

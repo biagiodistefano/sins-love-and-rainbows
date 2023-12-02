@@ -12,7 +12,7 @@ class ApiKey(APIKeyHeader):
 
     def authenticate(self, request: HttpRequest, key: str):
         try:
-            return ApiClient.objects.get(api_key=key)
+            return ApiClient.objects.get(api_key=key, active=True)
         except ApiClient.DoesNotExist:
             pass
 
