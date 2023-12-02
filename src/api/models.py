@@ -243,17 +243,13 @@ class Message(models.Model):
 
 
 class ExternalLink(models.Model):
-    party = models.ForeignKey(Party, on_delete=models.CASCADE)
+    parties = models.ManyToManyField(Party, blank=True)
     name = models.CharField(max_length=30, db_index=True)
     url = models.URLField(db_index=True)
     description = models.CharField(max_length=250, db_index=True, null=True, blank=True)
 
-    @property
-    def party_edition(self) -> str:
-        return self.party.edition
-
     def __str__(self):
-        return f"{self.name} @ {self.party}: {self.url}"
+        return f"{self.name}: {self.url}"
 
 
 class Item(models.Model):
@@ -295,21 +291,17 @@ class Item(models.Model):
 
 
 class PartyFile(models.Model):
-    party = models.ForeignKey(Party, on_delete=models.CASCADE)
+    parties = models.ManyToManyField(Party, blank=True)
     name = models.CharField(max_length=30, db_index=True)
     file = models.FileField(upload_to='files', db_index=True)
     description = models.CharField(max_length=250, db_index=True, null=True, blank=True)
-
-    @property
-    def party_edition(self) -> str:
-        return self.party.edition
 
     @property
     def url(self) -> str:
         return self.file.url
 
     def __str__(self):
-        return f"{self.file} @ {self.party}"
+        return f"{self.file.name}"
 
 
 @receiver(post_save, sender=Party)

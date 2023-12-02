@@ -34,7 +34,7 @@ class PersonAdmin(admin.ModelAdmin):
 
 
 class PartyFileInline(admin.TabularInline):
-    model = PartyFile
+    model = PartyFile.parties.through
     classes = ['collapse']
 
 
