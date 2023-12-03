@@ -167,3 +167,26 @@ def logout_view(request: HttpRequest) -> HttpResponse:
         return HttpResponseRedirect(next_page)
     else:
         return redirect('home')  # Replace with the name of your default route
+
+
+@login_required
+def profile_view(request: HttpRequest) -> HttpResponse:
+    return render(
+        request, 'slrportal/profile.html',
+        {'person': request.user, 'ingredients': [i.name for i in models.Ingredient.objects.all()]}
+        )
+
+
+@login_required()
+def add_allergy(request: HttpRequest) -> HttpResponse:
+    if request.method != 'POST':
+        return HttpResponseNotAllowed("Only POST requests are allowed.")
+    person = get_object_or_404(models.Person, id=request.user.id)
+    allergy_name = request.POST.get('allergy')
+    if allergy_name is None:
+        return HttpResponseBadRequest("No allergy provided")
+    ingredient, _ = models.Ingredient.objects.get_or_create(name=allergy_name)
+    allergy, _ = models.Allergy.objects.get_or_create(ingredient=ingredient)
+    person.allergies.add(allergy)
+    person.save()
+    return redirect('profile')

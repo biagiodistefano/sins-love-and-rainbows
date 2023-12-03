@@ -79,6 +79,7 @@
         <section>
             <h2 class="text-2xl font-bold mb-2">Add Item</h2>
             <p>If possible, take into account the following allergies/intolerances: {{ party.allergy_list|join:", " }}</p>
+            <p>Do you have allergies? <a href="{% url 'profile' %}" class="" style="color: #6B46C1;">Add them to your profile</a></p>
 
             <form action="{% url 'add_item' edition=party.edition %}" method="post" class="space-y-4">
                 {% csrf_token %}

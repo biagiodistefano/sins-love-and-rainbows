@@ -94,11 +94,11 @@ class Party(models.Model):
         Invite.objects.filter(person=person, party=self).delete()
 
     def allergy_list(self) -> list[str]:
-        invites = self.invite_set.filter(status='Y').prefetch_related('person__allergy_set__ingredient')
+        invites = self.invite_set.filter(status='Y').prefetch_related('person__allergies__ingredient')
         return list(
             set(
                 [allergy.ingredient.name for invite in invites for allergy in
-                 invite.person.allergy_set.all()]
+                 invite.person.allergies.all()]
             )
         )  # noqa: E501
 
@@ -206,7 +206,7 @@ class Ingredient(models.Model):
 
 class Allergy(models.Model):
     ingredient = models.OneToOneField(Ingredient, on_delete=models.CASCADE)
-    people = models.ManyToManyField(Person)
+    people = models.ManyToManyField(Person, related_name="allergies", blank=True)
 
     def __str__(self):
         return self.ingredient.name

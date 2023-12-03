@@ -236,7 +236,8 @@ class SLRController:  # type: ignore
 
     @route.post("/ingredient/create", tags=["ingredients"], response={201: schema.IngredientSchema})
     def create_ingredient(self, request: HttpRequest, ingredient: schema.IngredientSchemaCreate):
-        return 201, models.Ingredient.objects.create(**ingredient.dict())
+        ingredient, _ = models.Ingredient.objects.get_or_create(**ingredient.dict(exclude_unset=True))
+        return 201, ingredient
 
     @route.get("/ingredient/all", tags=["ingredients"], response={200: list[schema.IngredientSchema]})
     def list_ingredients(self, request: HttpRequest):
@@ -263,6 +264,19 @@ class SLRController:  # type: ignore
         ingredient = get_object_or_404(models.Ingredient, id=ingredient_id)
         person = get_object_or_404(models.Person, id=person_id)
         allergy = models.Allergy.objects.get_or_create(ingredient=ingredient)[0]
+        allergy.people.add(person)
+        return 201, allergy
+
+    @route.post(
+        "/person/{person_id}/allergy/create", tags=["people", "allergies"],
+        response={201: schema.AllergySchema}
+    )
+    def create_allergy_ingredient(
+        self, request: HttpRequest, person_id: str, ingredient: schema.IngredientSchemaCreate
+    ):
+        person = get_object_or_404(models.Person, id=person_id)
+        ingredient, _ = models.Ingredient.objects.get_or_create(**ingredient.dict(exclude_unset=True))
+        allergy, _ = models.Allergy.objects.get_or_create(ingredient=ingredient)
         allergy.people.add(person)
         return 201, allergy
 
