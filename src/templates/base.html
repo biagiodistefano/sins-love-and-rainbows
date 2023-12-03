@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
     <title>{% block title %}Sins, Love and Rainbows{% endblock %}</title>
     {% block head %}
         <!-- Base template styles (if any) go here -->
@@ -13,11 +15,25 @@
 <body class="bg-gray-100">
 {% if request.user.is_staff %}
     <div class="bg-red-500 text-white text-center py-2">
-        <p>You are logged in as an admin.
-            <a href="{% url 'admin:index' %}" class="text-blue-600 hover:text-blue-800">Go to admin panel</a>
-        </p>
+        <p style="display: inline;">You are logged in as an admin.</p>
+        <a href="{% url 'admin:index' %}" class="text-blue-600 hover:text-blue-800" style="display: inline; margin-left: 10px;">Go to admin panel</a> |
+        <form action="{% url 'logout' %}" method="post" style="display: inline;">
+            {% csrf_token %}
+            <button type="submit" class="text-blue-600 hover:text-blue-800 bg-transparent border-none cursor-pointer">Log out</button>
+        </form>
+    </div>
+{% elif request.user.is_authenticated %}
+    <div class="bg-green-500 text-white text-center py-2">
+        <p style="display: inline;">You are logged in as {{ request.user.first_name }}.</p>
+        <form action="{% url 'logout' %}" method="post" style="display: inline; margin-left: 10px;">
+            {% csrf_token %}
+            <button type="submit" class="text-blue-600 hover:text-blue-800 bg-transparent border-none cursor-pointer">Log out</button>
+        </form>
+    </p>
     </div>
 {% endif %}
+
+
 {% block content %}
     <!-- Main content will go here -->
 {% endblock %}
@@ -27,17 +43,37 @@
     <!-- Base template scripts (if any) go here -->
 {% endblock %}
 <!-- cookie info banner-->
-<<div class="fixed bottom-0 w-full bg-gray-200 text-center py-2" id="banner">
-    <button id="closeBanner" class="absolute top-0 right-0 p-2 text-lg">X</button>
-    <p class="text-gray-600 text-sm">I'm using technical cookies and there's nothing you can do about it.
-        <a href="https://www.youtube.com/watch?v=dQw4w9WgXcQ" class="text-blue-600 hover:text-blue-800">Learn more</a>
-    </p>
-</div>
-<script>
-    document.getElementById('closeBanner').addEventListener('click', function() {
-        document.getElementById('banner').style.display = 'none';
-    });
-</script>
+{% if not request.session.cookie_accept %}
+    <div class="fixed bottom-0 w-full bg-gray-200 text-center py-2" id="banner">
+        <form method="post" id="cookieForm">
+            {% csrf_token %}
+            <button type="submit" class="absolute top-0 right-0 p-2 text-lg">X</button>
+        </form>
+        <p class="text-gray-600 text-sm">I'm using technical cookies and there's nothing you can do about it.
+            <a href="https://www.youtube.com/watch?v=dQw4w9WgXcQ" class="text-blue-600 hover:text-blue-800">Learn
+                more</a>
+        </p>
+    </div>
+
+    <script>
+        $(document).ready(function () {
+            $('#cookieForm').on('submit', function (e) {
+                e.preventDefault();
+                $.ajax({
+                    type: 'POST',
+                    url: '{% url "accept_cookies" %}',
+                    data: {
+                        csrfmiddlewaretoken: $('input[name=csrfmiddlewaretoken]').val()
+                    },
+                    success: function () {
+                        $('#banner').hide();
+                    }
+                });
+            });
+        });
+    </script>
+
+{% endif %}
 
 
 </body>

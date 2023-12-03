@@ -4,6 +4,8 @@ from . import views
 
 urlpatterns = [
     path('', views.home, name='home'),
+    path('logout', views.logout_view, name='logout'),
+    path('accept-cookies', views.accept_cookies, name='accept_cookies'),
     path('s/<str:short_url>', views.redirect_url, name='redirect'),
     path('next-party/', views.get_next_party, name='next_party'),
     path('party/<str:edition>', views.party_detail, name='party'),
