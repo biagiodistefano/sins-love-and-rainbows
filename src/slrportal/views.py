@@ -186,7 +186,5 @@ def add_allergy(request: HttpRequest) -> HttpResponse:
     if allergy_name is None:
         return HttpResponseBadRequest("No allergy provided")
     ingredient, _ = models.Ingredient.objects.get_or_create(name=allergy_name)
-    allergy, _ = models.Allergy.objects.get_or_create(ingredient=ingredient)
-    person.allergies.add(allergy)
-    person.save()
+    allergy, _ = models.Allergy.objects.get_or_create(ingredient=ingredient, person=person)
     return redirect('profile')

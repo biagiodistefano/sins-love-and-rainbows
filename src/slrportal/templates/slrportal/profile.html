@@ -9,7 +9,7 @@
         <h2 class="text-lg font-semibold mb-2">Your Allergies/Intolerances:</h2>
         <div class="flex flex-wrap gap-2">
             {% for allergy in person.allergies.all %}
-                <span class="bg-red-100 text-red-800 text-sm font-semibold mr-2 px-2.5 py-0.5 rounded dark:bg-red-200 dark:text-red-900">{{ allergy.ingredient.name }}</span>
+                <span class="bg-red-100 text-red-800 text-sm font-semibold mr-2 px-2.5 py-0.5 rounded dark:bg-red-200 dark:text-red-900">{{ allergy.name }}</span>
             {% empty %}
                 <p>You have no allergies listed.</p>
             {% endfor %}
