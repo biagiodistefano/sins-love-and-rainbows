@@ -1,6 +1,16 @@
 {% extends 'base.html' %}
 
-{% block title %}Index Page{% endblock %}
+{% block title %}Sins, Love and Rainbows - Sex-Positive Parties in Vienna{% endblock %}
+
+{% block head %}
+    <meta property="og:title" content="Sins, Love and Rainbows">
+    {% load static %}
+    <meta property="og:image" content="{% static 'slrportal/slr_circle.png' %}">
+    <meta property="og:description" content="Sex-Positive Parties in Vienna">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="{{ request.build_absolute_uri }}">
+    <meta property="og:site_name" content="Sins, Love and Rainbows">
+{% endblock %}
 
 {% block content %}
 <div class="flex flex-col justify-center items-center h-screen">
