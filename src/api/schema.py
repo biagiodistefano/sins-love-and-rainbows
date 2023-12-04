@@ -46,8 +46,8 @@ class IngredientSchema(IngredientSchemaCreate):
 
 
 class AllergySchema(Schema):
-    ingredient: IngredientSchema
-    people: list[PersonSchema]
+    ingredient_id: int
+    person_id: UUID4
 
 
 class InviteSummarySchema(Schema):

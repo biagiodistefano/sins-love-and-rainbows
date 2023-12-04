@@ -263,8 +263,7 @@ class SLRController:  # type: ignore
     def create_allergy(self, request: HttpRequest, ingredient_id: str, person_id: str):
         ingredient = get_object_or_404(models.Ingredient, id=ingredient_id)
         person = get_object_or_404(models.Person, id=person_id)
-        allergy = models.Allergy.objects.get_or_create(ingredient=ingredient)[0]
-        allergy.people.add(person)
+        allergy = models.Allergy.objects.get_or_create(ingredient=ingredient, person=person)[0]
         return 201, allergy
 
     @route.post(
@@ -282,14 +281,11 @@ class SLRController:  # type: ignore
 
     @route.get(
         "/ingredient/{ingredient_id}/allergy", tags=["ingredients", "allergies"],
-        response={200: schema.AllergySchema, 404: None}
+        response={200: t.List[schema.PersonSchema], 404: None}
     )
     def read_allergy(self, request: HttpRequest, ingredient_id: str):
         ingredient = get_object_or_404(models.Ingredient, id=ingredient_id)
-        try:
-            return 200, ingredient.allergy
-        except models.Ingredient.allergy.RelatedObjectDoesNotExist:
-            return 404, None
+        return 200, ingredient.allergic_people.all()
 
     @route.get(
         "/person/{person_id}/allergies", tags=["people", "allergies"],
@@ -297,16 +293,15 @@ class SLRController:  # type: ignore
     )
     def list_person_allergies(self, request: HttpRequest, person_id: str):
         person = get_object_or_404(models.Person, id=person_id)
-        return 200, [allergy.ingredient for allergy in person.allergy_set.all().select_related("ingredient")]
+        return 200, person.allergies.all()
 
     @route.delete(
         "/ingredient/{ingredient_id}/allergy/{person_id}", tags=["ingredients", "allergies"],
         response={204: None}
     )
     def delete_allergy(self, request: HttpRequest, ingredient_id: str, person_id: str):
-        allergy = get_object_or_404(models.Allergy, ingredient_id=ingredient_id)
-        person = get_object_or_404(models.Person, id=person_id)
-        allergy.people.remove(person)
+        allergy = get_object_or_404(models.Allergy, ingredient_id=ingredient_id, person_id=person_id)
+        allergy.delete()
         return 204, None
 
     @route.post("/party/{edition}/item/create", tags=["party", "items"], response={201: schema.ItemSchema})

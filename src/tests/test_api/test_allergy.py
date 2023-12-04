@@ -40,7 +40,9 @@ def test_allergy(api_client: Client) -> None:
     for random_person in ["Giovanni", "Marco", "Luca"]:
         create = api_client.post(
             "/api/person/create",
-            data=json.dumps({"username": random_person, "first_name": random_person, "from_abroad": False, "in_broadcast": True}),
+            data=json.dumps(
+                {"username": random_person, "first_name": random_person, "from_abroad": False, "in_broadcast": True}
+                ),
             content_type="application/json",
         )
         assert create.status_code == 201
@@ -56,7 +58,7 @@ def test_allergy(api_client: Client) -> None:
     for ingredient_id in ingredient_ids:
         read = api_client.get(f"/api/ingredient/{ingredient_id}/allergy")
         assert read.status_code == 200
-        assert set(p["id"] for p in read.json()["people"]) == set(allergic_people_ids)
+        assert set(p["id"] for p in read.json()) == set(allergic_people_ids)
 
     for person_id in allergic_people_ids:
         read = api_client.get(f"/api/person/{person_id}/allergies")
@@ -70,11 +72,7 @@ def test_allergy(api_client: Client) -> None:
     assert delete_allergy.status_code == 204
     read = api_client.get(f"/api/ingredient/{ingredient_id}/allergy")
     assert read.status_code == 200
-    assert set(p["id"] for p in read.json()["people"]) == set(allergic_people_ids[1:])
-
-    for ingredient_id in random_ingredient_ids:
-        read = api_client.get(f"/api/ingredient/{ingredient_id}/allergy")
-        assert read.status_code == 404
+    assert set(p["id"] for p in read.json()) == set(allergic_people_ids[1:])
 
     for person_id in random_people_ids:
         read = api_client.get(f"/api/person/{person_id}/allergies")

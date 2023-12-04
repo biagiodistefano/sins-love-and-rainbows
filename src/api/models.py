@@ -200,6 +200,7 @@ class Invite(models.Model):
 class Ingredient(models.Model):
     name = LowerCharField(max_length=30, db_index=True, unique=True)
     items = models.ManyToManyField('Item', blank=True)
+    allergic_people = models.ManyToManyField(Person, through='Allergy')
 
     def __str__(self):
         return self.name
