@@ -124,6 +124,10 @@ def update_rsvp(request: HttpRequest, edition: str) -> HttpResponse:
     if invite is None:
         return HttpResponseBadRequest("Not invited")
     with transaction.atomic():
+        status = form.cleaned_data["rsvp"]
+        if status.upper() in ("Y", "M"):
+            if party.max_people and party.yes_count() >= party.max_people:
+                return HttpResponseBadRequest("Party is full")
         invite.status = form.cleaned_data["rsvp"]
         invite.save()
         if invite.status == "N":

@@ -130,6 +130,11 @@ class SLRController:  # type: ignore
         party = get_object_or_404(models.Party, edition=edition)
         person = get_object_or_404(models.Person, id=person_id)
         invite = models.Invite.objects.get_or_create(party=party, person=person)[0]
+        if invite.status == status.upper():
+            return 200, invite
+        if status.upper() in ("Y", "M"):
+            if party.max_people and party.yes_count() >= party.max_people:
+                return 400, {"message": "Party is full"}
         invite.status = status.upper()
         with transaction.atomic():
             if invite.status == "N":

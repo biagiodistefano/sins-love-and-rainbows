@@ -75,7 +75,8 @@ class Party(models.Model):
     )  # noqa: E501
     description_rendered = RenderedMarkdownField(null=True, blank=True)
     logo = models.ImageField(upload_to='logos', null=True, blank=True)
-    closed = models.BooleanField(default=False, db_index=True)
+    closed = models.BooleanField(default=True, db_index=True)
+    max_people = models.PositiveSmallIntegerField(default=0, db_index=True)
 
     @classmethod
     def get_next(cls) -> Optional['Party']:

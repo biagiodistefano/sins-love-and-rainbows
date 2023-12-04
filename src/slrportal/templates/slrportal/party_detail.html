@@ -34,6 +34,11 @@
             {% endif %}
             <p class="text-center mt-2">Confirmed: <b>{{ party.yes_count }}</b> Maybe: <b>{{ party.maybe_count }}</b>
             </p>
+            {% if party.max_people %}
+                <p class="text-center mt-2">
+                    Max people: <b>{{ party.max_people }}</b>
+                </p>
+            {% endif %}
             <!-- Party Description -->
             <div class="flex justify-center">
                 <div class="mt-4 w-full md:w-1/2 lg:w-1/3 text-center">
@@ -49,37 +54,43 @@
 
                 {% if invite %}
                     <div class="text-center mt-4">
+                        {% if not party.max_people or party.yes_count < party.max_people or invite.status == 'Y' %}
+                            <p>You are invited!</p>
+                            {% if invite.status %}
+                                <p>You have RSVP'd <b>{{ invite.get_status_display }}</b></p>
+                            {% else %}
+                                <p>You have <b>not</b> RSVP'd yet</p>
+                                <p>Will you join the Party?</p>
+                            {% endif %}
 
-                        <p>You are invited!</p>
-                        {% if invite.status %}
-                            <p>You have RSVP'd <b>{{ invite.get_status_display }}</b></p>
+                            <form action="{% url 'update_rsvp' edition=party.edition %}" method="post" class="mt-4">
+                                {% csrf_token %}
+                                <div class="flex justify-center space-x-4">
+                                    <input type="hidden" value="{{ person.id }}" name="person_id">
+                                    <label>
+                                        <input type="radio" name="rsvp" value="Y" {% if invite.status == 'Y' %}
+                                               checked {% endif %}>
+                                        Yes
+                                    </label>
+                                    <label>
+                                        <input type="radio" name="rsvp" value="N" {% if invite.status == 'N' %}
+                                               checked {% endif %}>
+                                        No
+                                    </label>
+                                    <label>
+                                        <input type="radio" name="rsvp" value="M" {% if invite.status == 'M' %}
+                                               checked {% endif %}>
+                                        Maybe
+                                    </label>
+                                </div>
+                                <button type="submit"
+                                        class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded mt-4">
+                                    Update RSVP
+                                </button>
+                            </form>
                         {% else %}
-                            <p>You have <b>not</b> RSVP'd yet</p>
-                            <p>Will you join the Party?</p>
+                            <p><b>Sorry, this Party is full</b>!<br>You cannot update your RSVP anymore.</p>
                         {% endif %}
-
-                        <form action="{% url 'update_rsvp' edition=party.edition %}" method="post" class="mt-4">
-                            {% csrf_token %}
-                            <div class="flex justify-center space-x-4">
-                                <input type="hidden" value="{{ person.id }}" name="person_id">
-                                <label>
-                                    <input type="radio" name="rsvp" value="Y" {% if invite.status == 'Y' %} checked {% endif %}>
-                                    Yes
-                                </label>
-                                <label>
-                                    <input type="radio" name="rsvp" value="N" {% if invite.status == 'N' %} checked {% endif %}>
-                                    No
-                                </label>
-                                <label>
-                                    <input type="radio" name="rsvp" value="M" {% if invite.status == 'M' %} checked {% endif %}>
-                                    Maybe
-                                </label>
-                            </div>
-                            <button type="submit"
-                                    class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded mt-4">
-                                Update RSVP
-                            </button>
-                        </form>
                     </div>
                 {% else %}
                     <p class="text-center mt-4">You are <b>not</b> invited to this party.</p>
