@@ -76,10 +76,14 @@
         </section>
     {% endfor %}
     {% if invite %}
-        <section>
-            <h2 class="text-2xl font-bold mb-2">Add Item</h2>
-            <p>If possible, take into account the following allergies/intolerances: {{ party.allergy_list|join:", " }}</p>
-            <p>Do you have allergies? <a href="{% url 'profile' %}" class="" style="color: #6B46C1;">Add them to your profile</a></p>
+        <section class="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4">
+            <h2 class="text-2xl font-bold mb-4 text-purple-700">Add Item</h2>
+            <p class="mb-2">If possible, take into account the following allergies/intolerances:
+                <strong>{{ party.allergy_list|join:", " }}</strong></p>
+            <p class="mb-4">Do you have allergies? <a href="{% url 'profile' %}"
+                                                      class="text-purple-600 hover:text-purple-800 font-bold">Add them
+                to your profile</a></p>
+            <!-- The rest of your form or content goes here -->
 
             <form action="{% url 'add_item' edition=party.edition %}" method="post" class="space-y-4">
                 {% csrf_token %}

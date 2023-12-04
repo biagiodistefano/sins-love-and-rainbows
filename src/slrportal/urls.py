@@ -6,6 +6,7 @@ urlpatterns = [
     path('', views.home, name='home'),
     path('logout', views.logout_view, name='logout'),
     path('profile', views.profile_view, name='profile'),
+    path('privacy-policy', views.privacy_policy, name='privacy_policy'),
     path('accept-cookies', views.accept_cookies, name='accept_cookies'),
     path('s/<str:short_url>', views.redirect_url, name='redirect'),
     path('next-party/', views.get_next_party, name='next_party'),

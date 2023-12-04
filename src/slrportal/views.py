@@ -196,3 +196,7 @@ def delete_allergy(request: HttpRequest, allergy_id: int) -> HttpResponse:
     allergy.delete()
     # Redirect to the profile page, or wherever is appropriate
     return redirect('profile')  # Replace 'profile' with the name of your profile view
+
+
+def privacy_policy(request: HttpRequest) -> HttpResponse:
+    return render(request, 'slrportal/privacy_policy.html')
