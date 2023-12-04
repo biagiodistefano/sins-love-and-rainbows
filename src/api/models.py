@@ -207,7 +207,7 @@ class Ingredient(models.Model):
 
 class Allergy(models.Model):
     ingredient = models.ForeignKey(Ingredient, on_delete=models.CASCADE)
-    person = models.ForeignKey(Person, on_delete=models.CASCADE, null=True, blank=True)
+    person = models.ForeignKey(Person, on_delete=models.CASCADE)
 
     def __str__(self):
         return self.ingredient.name
