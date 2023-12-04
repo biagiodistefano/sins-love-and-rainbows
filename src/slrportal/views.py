@@ -5,12 +5,12 @@ from django.contrib.auth.decorators import login_required
 from django.core import exceptions
 from django.db import transaction
 from django.http import (
-    Http404, HttpResponse, HttpResponseBadRequest, HttpResponseNotAllowed, HttpResponseRedirect,
-    JsonResponse,
+    Http404, HttpResponse, HttpResponseBadRequest, HttpResponseForbidden, HttpResponseRedirect, JsonResponse,
 )
 from django.http.request import HttpRequest
 from django.shortcuts import get_object_or_404, redirect, render, reverse
 from django.utils import timezone
+from django.views.decorators.http import require_POST
 
 from api import models
 from .forms import ItemForm, RsvpForm
@@ -46,9 +46,8 @@ def party_detail(request: HttpRequest, edition: str) -> HttpResponse:
 
 
 @login_required
+@require_POST
 def assign_item(request: HttpRequest, item_id: str, person_id: str) -> HttpResponse:
-    if request.method != 'POST':
-        return HttpResponseNotAllowed("Only POST requests are allowed.")
     task = get_object_or_404(models.Item, id=item_id)
     person = get_object_or_404(models.Person, id=person_id)
     if request.user != person and not request.user.is_superuser:
@@ -67,9 +66,8 @@ def assign_item(request: HttpRequest, item_id: str, person_id: str) -> HttpRespo
 
 
 @login_required
+@require_POST
 def unassign_item(request: HttpRequest, item_id: str, person_id: str) -> HttpResponse:
-    if request.method != 'POST':
-        return HttpResponseNotAllowed("Only POST requests are allowed.")
     task = get_object_or_404(models.Item, id=item_id)
     if task.party.closed:
         return HttpResponseBadRequest("Party is closed")
@@ -83,9 +81,8 @@ def unassign_item(request: HttpRequest, item_id: str, person_id: str) -> HttpRes
 
 
 @login_required
+@require_POST
 def add_item(request: HttpRequest, edition: str) -> HttpResponse:
-    if not request.method == 'POST':
-        return HttpResponseNotAllowed("Only POST requests are allowed.")
     party = get_object_or_404(models.Party, edition=edition)
     if party.closed:
         return HttpResponseBadRequest("Party is closed")
@@ -109,9 +106,8 @@ def add_item(request: HttpRequest, edition: str) -> HttpResponse:
 
 
 @login_required
+@require_POST
 def update_rsvp(request: HttpRequest, edition: str) -> HttpResponse:
-    if request.method != 'POST':
-        return HttpResponseNotAllowed("Only POST requests are allowed.")
     party = get_object_or_404(models.Party, edition=edition)
     if party.closed:
         return HttpResponseBadRequest("Party is closed")
@@ -139,16 +135,14 @@ def update_rsvp(request: HttpRequest, edition: str) -> HttpResponse:
     return redirect(url)
 
 
+@require_POST
 def accept_cookies(request: HttpRequest) -> HttpResponse:
-    if request.method != 'POST':
-        return HttpResponseNotAllowed("Only POST requests are allowed.")
     request.session["cookie_accept"] = True
     return JsonResponse({"message": "Cookie accepted"})
 
 
+@require_POST
 def logout_view(request: HttpRequest) -> HttpResponse:
-    if request.method != 'POST':
-        return HttpResponseNotAllowed("Only POST requests are allowed.")
 
     # Log out the user
     logout(request)
@@ -174,13 +168,12 @@ def profile_view(request: HttpRequest) -> HttpResponse:
     return render(
         request, 'slrportal/profile.html',
         {'person': request.user, 'ingredients': [i.name for i in models.Ingredient.objects.all()]}
-        )
+    )
 
 
 @login_required()
+@require_POST
 def add_allergy(request: HttpRequest) -> HttpResponse:
-    if request.method != 'POST':
-        return HttpResponseNotAllowed("Only POST requests are allowed.")
     person = get_object_or_404(models.Person, id=request.user.id)
     allergy_name = request.POST.get('allergy')
     if allergy_name is None:
@@ -188,3 +181,18 @@ def add_allergy(request: HttpRequest) -> HttpResponse:
     ingredient, _ = models.Ingredient.objects.get_or_create(name=allergy_name)
     allergy, _ = models.Allergy.objects.get_or_create(ingredient=ingredient, person=person)
     return redirect('profile')
+
+
+@login_required
+@require_POST
+def delete_allergy(request: HttpRequest, allergy_id: int) -> HttpResponse:
+    allergy = get_object_or_404(models.Allergy, ingredient_id=allergy_id, person=request.user)
+
+    # Check if the person deleting the allergy is the one who owns it
+    if allergy.person != request.user:
+        # If not, return an HTTP Forbidden response
+        return HttpResponseForbidden()
+
+    allergy.delete()
+    # Redirect to the profile page, or wherever is appropriate
+    return redirect('profile')  # Replace 'profile' with the name of your profile view
