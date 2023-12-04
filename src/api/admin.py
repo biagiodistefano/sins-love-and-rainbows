@@ -12,7 +12,7 @@ from .models import Allergy, Invite, Item, Party, PartyFile, Person
 
 
 class AllergyInline(admin.TabularInline):
-    model = Allergy.people.through
+    model = Allergy
 
 
 @admin.register(Person)
@@ -30,7 +30,7 @@ class PersonAdmin(admin.ModelAdmin):
 
     @admin.display(description='Allergies')
     def allergies_list(self, obj: Person) -> str:
-        return ", ".join(obj.allergy_set.values_list("ingredient__name", flat=True))
+        return ", ".join(allergy.name for allergy in obj.allergies.all())
 
 
 class PartyFileInline(admin.TabularInline):

@@ -24,6 +24,7 @@ class Person(AbstractUser):
     phone_number = models.CharField(null=True, blank=True, db_index=True, max_length=128)
     from_abroad = models.BooleanField(default=False, db_index=True)
     in_broadcast = models.BooleanField(default=True, db_index=True)
+    allergies = models.ManyToManyField('Ingredient', blank=True, through='Allergy')
 
     msg_template = (
         "Hi!\n\n"
@@ -94,10 +95,10 @@ class Party(models.Model):
         Invite.objects.filter(person=person, party=self).delete()
 
     def allergy_list(self) -> list[str]:
-        invites = self.invite_set.filter(status='Y').prefetch_related('person__allergies__ingredient')
+        invites = self.invite_set.filter(status='Y').prefetch_related('person__allergies')
         return list(
             set(
-                [allergy.ingredient.name for invite in invites for allergy in
+                [allergy.name for invite in invites for allergy in
                  invite.person.allergies.all()]
             )
         )  # noqa: E501
@@ -205,8 +206,8 @@ class Ingredient(models.Model):
 
 
 class Allergy(models.Model):
-    ingredient = models.OneToOneField(Ingredient, on_delete=models.CASCADE)
-    people = models.ManyToManyField(Person, related_name="allergies", blank=True)
+    ingredient = models.ForeignKey(Ingredient, on_delete=models.CASCADE)
+    person = models.ForeignKey(Person, on_delete=models.CASCADE, null=True, blank=True)
 
     def __str__(self):
         return self.ingredient.name
