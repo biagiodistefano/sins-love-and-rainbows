@@ -43,6 +43,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django.contrib.sites',
 
     'corsheaders',
 
@@ -86,6 +87,8 @@ TEMPLATES = [
         },
     },
 ]
+
+SITE_ID = 1
 
 WSGI_APPLICATION = 'sinsloveandrainbows.wsgi.application'
 
@@ -171,7 +174,6 @@ AUTHENTICATION_BACKENDS = (
     'slrportal.auth_backend.CustomQueryParamAuthentication',
 )
 
-
 SLR_USE_AUTH = config("SLR_USE_AUTH", default=True, cast=bool)
 
 DATA_UPLOAD_MAX_MEMORY_SIZE = int(
@@ -207,7 +209,6 @@ LOGGING = {
         },
     },
 }
-
 
 EMAIL_HOST = config('EMAIL_HOST')
 EMAIL_PORT = config('EMAIL_PORT', default=587, cast=int)
