@@ -52,6 +52,33 @@
                     <h4 class="text-2xl font-bold text-center mt-4">Hello, {{ person.get_short_name }}!</h4>
                 </div>
 
+                {% if person.is_staff %}
+                    <!--- Yes: chips for party.yes_people --->
+                    <div class="mt-4">
+                        <h5 class="text-xl font-bold text-center mb-2">Confirmed Guests:</h5>
+                        <div class="flex flex-wrap justify-center">
+                            {% for yes_person in party.yes_people %}
+                                <span class="bg-green-200 text-green-800 text-sm font-semibold mr-2 px-2.5 py-0.5 rounded dark:bg-green-700 dark:text-green-200 mb-2">{{ yes_person.person.get_full_name }}</span>
+                            {% empty %}
+                                <p class="text-center">No confirmed guests yet.</p>
+                            {% endfor %}
+                        </div>
+                    </div>
+
+                    <!--- Maybe: chips for party.maybe_people --->
+                    <div class="mt-4">
+                        <h5 class="text-xl font-bold text-center mb-2">Maybe Guests:</h5>
+                        <div class="flex flex-wrap justify-center">
+                            {% for maybe_person in party.maybe_people %}
+                                <span class="bg-yellow-200 text-yellow-800 text-sm font-semibold mr-2 px-2.5 py-0.5 rounded dark:bg-yellow-700 dark:text-yellow-200 mb-2">{{ maybe_person.person.get_full_name }}</span>
+                            {% empty %}
+                                <p class="text-center">No 'maybe' responses yet.</p>
+                            {% endfor %}
+                        </div>
+                    </div>
+                {% endif %}
+
+
                 {% if invite %}
                     <div class="text-center mt-4">
                         {% if not party.max_people or party.yes_count < party.max_people or invite.status == 'Y' %}
