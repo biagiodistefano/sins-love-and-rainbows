@@ -171,18 +171,6 @@ AUTHENTICATION_BACKENDS = (
     'slrportal.auth_backend.CustomQueryParamAuthentication',
 )
 
-# Email settings
-# EMAIL_HOST = config('BIAGIODISTEFANO_EMAIL_HOST')
-# EMAIL_PORT = config('BIAGIODISTEFANO_EMAIL_PORT', default=587, cast=int)
-# EMAIL_HOST_USER = config('BIAGIODISTEFANO_EMAIL_HOST_USER')
-# EMAIL_HOST_PASSWORD = config('BIAGIODISTEFANO_EMAIL_HOST_PASSWORD')
-# EMAIL_USE_TLS = True
-# DEFAULT_FROM_EMAIL = config('BIAGIODISTEFANO_DEFAULT_FROM_EMAIL')
-DRY_EMAILS = DEBUG
-if DEBUG:
-    EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
-
-DEFAULT_AUTO_FIELD = 'django.db.models.AutoField'
 
 SLR_USE_AUTH = config("SLR_USE_AUTH", default=True, cast=bool)
 
@@ -219,3 +207,14 @@ LOGGING = {
         },
     },
 }
+
+
+EMAIL_HOST = config('EMAIL_HOST')
+EMAIL_PORT = config('EMAIL_PORT', default=587, cast=int)
+EMAIL_HOST_USER = config('EMAIL_HOST_USER')
+EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD')
+EMAIL_USE_SSL = True
+DEFAULT_FROM_EMAIL = config('DEFAULT_FROM_EMAIL')
+DRY_EMAILS = False
+EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
+ADMINS = [("Biagio", "me+slr@biagiodistefano.io")]

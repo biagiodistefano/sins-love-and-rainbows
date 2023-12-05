@@ -14,6 +14,7 @@ from django.views.decorators.http import require_POST
 
 from api import models
 from .forms import ItemForm, RsvpForm
+from .notifications import notify_admins_of_rsvp_change
 
 
 def home(request: HttpRequest) -> HttpResponse:
@@ -123,6 +124,7 @@ def update_rsvp(request: HttpRequest, edition: str) -> HttpResponse:
     invite = models.Invite.objects.filter(party=party, person=person).first()
     if invite is None:
         return HttpResponseBadRequest("Not invited")
+    old_status = invite.status
     with transaction.atomic():
         status = form.cleaned_data["rsvp"]
         if status.upper() in ("Y", "M"):
@@ -136,6 +138,8 @@ def update_rsvp(request: HttpRequest, edition: str) -> HttpResponse:
                 item.assigned_to.remove(person)
                 item.save()
     url = reverse("party", kwargs={"edition": party.edition})
+    if old_status != invite.status:
+        notify_admins_of_rsvp_change(person, party, invite)
     return redirect(url)
 
 
