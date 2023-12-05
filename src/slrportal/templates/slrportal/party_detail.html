@@ -54,11 +54,11 @@
 
                 {% if person.is_staff %}
                     <!--- Yes: chips for party.yes_people --->
-                    <div class="mt-4">
-                        <h5 class="text-xl font-bold text-center mb-2">Confirmed Guests:</h5>
-                        <div class="flex flex-wrap justify-center">
+                    <div class="mt-4 px-2">
+                        <h5 class="text-xl font-bold text-center mb-2">Confirmed ({{ party.yes_count }}):</h5>
+                        <div class="flex flex-wrap justify-center max-w-md mx-auto">
                             {% for yes_person in party.yes_people %}
-                                <span class="bg-green-200 text-green-800 text-sm font-semibold mr-2 px-2.5 py-0.5 rounded dark:bg-green-700 dark:text-green-200 mb-2">{{ yes_person.person.get_full_name }}</span>
+                                <span class="bg-green-200 text-green-800 text-xs font-semibold m-1 px-2 py-0.5 rounded dark:bg-green-700 dark:text-green-200">{{ yes_person.person.get_full_name }}</span>
                             {% empty %}
                                 <p class="text-center">No confirmed guests yet.</p>
                             {% endfor %}
@@ -66,17 +66,19 @@
                     </div>
 
                     <!--- Maybe: chips for party.maybe_people --->
-                    <div class="mt-4">
-                        <h5 class="text-xl font-bold text-center mb-2">Maybe Guests:</h5>
-                        <div class="flex flex-wrap justify-center">
+                    <div class="mt-4 px-2">
+                        <h5 class="text-xl font-bold text-center mb-2">Maybe ({{ party.maybe_count }}):</h5>
+                        <div class="flex flex-wrap justify-center max-w-md mx-auto">
                             {% for maybe_person in party.maybe_people %}
-                                <span class="bg-yellow-200 text-yellow-800 text-sm font-semibold mr-2 px-2.5 py-0.5 rounded dark:bg-yellow-700 dark:text-yellow-200 mb-2">{{ maybe_person.person.get_full_name }}</span>
+                                <span class="bg-yellow-200 text-yellow-800 text-xs font-semibold m-1 px-2 py-0.5 rounded dark:bg-yellow-700 dark:text-yellow-200">{{ maybe_person.person.get_full_name }}</span>
                             {% empty %}
                                 <p class="text-center">No 'maybe' responses yet.</p>
                             {% endfor %}
                         </div>
                     </div>
                 {% endif %}
+
+
 
 
                 {% if invite %}
