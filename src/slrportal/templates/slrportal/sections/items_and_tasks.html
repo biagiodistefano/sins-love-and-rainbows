@@ -62,9 +62,11 @@
                                       style="background-color: #FED7D7; color: #C53030;">Not Assigned</span>
                             {% endif %}
                             {% if person.is_staff %}
-                                {% for assignee in item.assigned_to.all %}
-                                    <span class="bg-green-200 text-green-800 text-xs font-semibold m-1 px-2 py-0.5 rounded dark:bg-green-700 dark:text-green-200">{{ assignee.get_full_name }}</span>
-                                {% endfor %}
+                                <div class="flex flex-wrap justify-left max-w-md mx-auto">
+                                    {% for assignee in item.assigned_to.all %}
+                                        <span class="bg-green-200 text-green-800 text-xs font-semibold m-1 px-2 py-0.5 rounded dark:bg-green-700 dark:text-green-200">{{ assignee.get_full_name }}</span>
+                                    {% endfor %}
+                                </div>
                             {% endif %}
                         </td>
                         <td class="px-5 py-5 border-b border-gray-200 bg-white text-sm">
