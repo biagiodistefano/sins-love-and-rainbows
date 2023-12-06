@@ -61,6 +61,11 @@
                                 <span class="inline-flex text-xs leading-5 font-semibold rounded-full text-right"
                                       style="background-color: #FED7D7; color: #C53030;">Not Assigned</span>
                             {% endif %}
+                            {% if person.is_staff %}
+                                {% for assignee in item.assigned_to.all %}
+                                    <span class="bg-green-200 text-green-800 text-xs font-semibold m-1 px-2 py-0.5 rounded dark:bg-green-700 dark:text-green-200">{{ assignee.get_full_name }}</span>
+                                {% endfor %}
+                            {% endif %}
                         </td>
                         <td class="px-5 py-5 border-b border-gray-200 bg-white text-sm">
                             {% if item.description %}
@@ -85,78 +90,79 @@
                 to your profile</a></p>
             <!-- The rest of your form or content goes here -->
             {% if not party.closed %}
-            <form action="{% url 'add_item' edition=party.edition %}" method="post" class="space-y-4">
-                {% csrf_token %}
-                <div class="flex flex-wrap -mx-3 mb-6">
-                    <div class="w-full md:w-1/2 px-3 mb-6 md:mb-0">
-                        <label for="id_name" class="block uppercase tracking-wide text-gray-700 text-xs font-bold mb-2">
-                            Name
-                        </label>
-                        <input type="text" name="name" id="id_name"
-                               class="appearance-none block w-full bg-gray-200 text-gray-700 border border-gray-200 rounded py-3 px-4 leading-tight focus:outline-none focus:bg-white focus:border-gray-500"
-                               placeholder="Item Name">
+                <form action="{% url 'add_item' edition=party.edition %}" method="post" class="space-y-4">
+                    {% csrf_token %}
+                    <div class="flex flex-wrap -mx-3 mb-6">
+                        <div class="w-full md:w-1/2 px-3 mb-6 md:mb-0">
+                            <label for="id_name"
+                                   class="block uppercase tracking-wide text-gray-700 text-xs font-bold mb-2">
+                                Name
+                            </label>
+                            <input type="text" name="name" id="id_name"
+                                   class="appearance-none block w-full bg-gray-200 text-gray-700 border border-gray-200 rounded py-3 px-4 leading-tight focus:outline-none focus:bg-white focus:border-gray-500"
+                                   placeholder="Item Name">
+                        </div>
+
+                        <div class="w-full md:w-1/2 px-3">
+                            <label for="id_category"
+                                   class="block uppercase tracking-wide text-gray-700 text-xs font-bold mb-2">
+                                Category
+                            </label>
+                            <div class="relative">
+                                <select name="category" id="id_category"
+                                        class="block appearance-none w-full bg-gray-200 border border-gray-200 text-gray-700 py-3 px-4 pr-8 rounded leading-tight focus:outline-none focus:bg-white focus:border-gray-500">
+                                    <option value="" disabled selected>Select an option</option>
+                                    <option value="F">Food</option>
+                                    <option value="D">Drink</option>
+                                    <option value="O">Other</option>
+                                </select>
+                            </div>
+                        </div>
+
                     </div>
 
-                    <div class="w-full md:w-1/2 px-3">
-                        <label for="id_category"
-                               class="block uppercase tracking-wide text-gray-700 text-xs font-bold mb-2">
-                            Category
-                        </label>
-                        <div class="relative">
-                            <select name="category" id="id_category"
-                                    class="block appearance-none w-full bg-gray-200 border border-gray-200 text-gray-700 py-3 px-4 pr-8 rounded leading-tight focus:outline-none focus:bg-white focus:border-gray-500">
-                                <option value="" disabled selected>Select an option</option>
-                                <option value="F">Food</option>
-                                <option value="D">Drink</option>
-                                <option value="O">Other</option>
-                            </select>
+                    <div class="flex flex-wrap -mx-3 mb-6">
+                        <div class="w-full px-3">
+                            <label for="id_quantity"
+                                   class="block uppercase tracking-wide text-gray-700 text-xs font-bold mb-2">
+                                Quantity?
+                            </label>
+                            <input type="text" name="quantity" id="id_quantity"
+                                   class="appearance-none block w-full bg-gray-200 text-gray-700 border border-gray-200 rounded py-3 px-4 leading-tight focus:outline-none focus:bg-white focus:border-gray-500"
+                                   placeholder="Quantity">
                         </div>
                     </div>
 
-                </div>
-
-                <div class="flex flex-wrap -mx-3 mb-6">
-                    <div class="w-full px-3">
-                        <label for="id_quantity"
-                               class="block uppercase tracking-wide text-gray-700 text-xs font-bold mb-2">
-                            Quantity?
-                        </label>
-                        <input type="text" name="quantity" id="id_quantity"
-                               class="appearance-none block w-full bg-gray-200 text-gray-700 border border-gray-200 rounded py-3 px-4 leading-tight focus:outline-none focus:bg-white focus:border-gray-500"
-                               placeholder="Quantity">
+                    <div class="flex flex-wrap -mx-3 mb-6">
+                        <div class="w-full px-3">
+                            <label for="id_description"
+                                   class="block uppercase tracking-wide text-gray-700 text-xs font-bold mb-2">
+                                Description?
+                            </label>
+                            <textarea name="description" id="id_description"
+                                      class="resize-none appearance-none block w-full bg-gray-200 text-gray-700 border border-gray-200 rounded py-3 px-4 leading-tight focus:outline-none focus:bg-white focus:border-gray-500"
+                                      placeholder="Enter a description..."></textarea>
+                        </div>
                     </div>
-                </div>
 
-                <div class="flex flex-wrap -mx-3 mb-6">
-                    <div class="w-full px-3">
-                        <label for="id_description"
-                               class="block uppercase tracking-wide text-gray-700 text-xs font-bold mb-2">
-                            Description?
+                    <!-- Hidden Person ID -->
+                    <input type="hidden" name="person_id" value="{{ person.id }}">
+
+                    <!-- Claim Checkbox -->
+                    <div class="flex items-center mb-4">
+                        <input type="checkbox" name="claim" id="id_claim" class="h-4 w-4 text-blue-600" checked>
+                        <label for="id_claim" class="ml-2 block text-sm text-gray-900">
+                            Claim
                         </label>
-                        <textarea name="description" id="id_description"
-                                  class="resize-none appearance-none block w-full bg-gray-200 text-gray-700 border border-gray-200 rounded py-3 px-4 leading-tight focus:outline-none focus:bg-white focus:border-gray-500"
-                                  placeholder="Enter a description..."></textarea>
                     </div>
-                </div>
 
-                <!-- Hidden Person ID -->
-                <input type="hidden" name="person_id" value="{{ person.id }}">
-
-                <!-- Claim Checkbox -->
-                <div class="flex items-center mb-4">
-                    <input type="checkbox" name="claim" id="id_claim" class="h-4 w-4 text-blue-600" checked>
-                    <label for="id_claim" class="ml-2 block text-sm text-gray-900">
-                        Claim
-                    </label>
-                </div>
-
-                <div class="flex justify-end">
-                    <button type="submit"
-                            class="shadow bg-purple-500 hover:bg-purple-400 focus:shadow-outline focus:outline-none text-white font-bold py-2 px-4 rounded">
-                        Add
-                    </button>
-                </div>
-            </form>
+                    <div class="flex justify-end">
+                        <button type="submit"
+                                class="shadow bg-purple-500 hover:bg-purple-400 focus:shadow-outline focus:outline-none text-white font-bold py-2 px-4 rounded">
+                            Add
+                        </button>
+                    </div>
+                </form>
             {% endif %}
         </section>
     {% endif %}
