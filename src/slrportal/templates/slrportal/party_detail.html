@@ -79,9 +79,11 @@
                 {% endif %}
 
 
-
-
-                {% if invite %}
+                {% if party.closed %}
+                    <div class="text-center mt-4">
+                        <p><b>Sorry, this Party is closed</b>!<br>You cannot update your RSVP anymore.</p>
+                    </div>
+                {% elif invite  %}
                     <div class="text-center mt-4">
                         {% if not party.max_people or party.yes_count < party.max_people or invite.status == 'Y' %}
                             <p>You are invited!</p>
