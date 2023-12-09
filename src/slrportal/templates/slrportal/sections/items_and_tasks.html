@@ -36,7 +36,7 @@
                         <td class="px-5 py-5 border-b border-gray-200 bg-white text-sm">
                             {% if item.assigned_to.count %}
                                 {% if invite and person in item.assigned_to.all %}
-                                    <form action="{% url 'unassign_item' item_id=item.id person_id=person.id %}"
+                                    <form action="{% url 'unclaim_item' item_id=item.id person_id=person.id %}"
                                           method="POST">
                                         <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
                                         <button type="submit"
@@ -49,7 +49,7 @@
                                           style="background-color: #C6F6D5; color: #38A169;">Assigned</span>
                                 {% endif %}
                             {% elif invite %}
-                                <form action="{% url 'assign_item' item_id=item.id person_id=person.id %}"
+                                <form action="{% url 'claim_item' item_id=item.id person_id=person.id %}"
                                       method="POST">
                                     <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
                                     <button type="submit"
@@ -92,7 +92,7 @@
                 to your profile</a></p>
             <!-- The rest of your form or content goes here -->
             {% if not party.closed %}
-                <form action="{% url 'add_item' edition=party.edition %}" method="post" class="space-y-4">
+                <form action="{% url 'create_item' edition=party.edition %}" method="post" class="space-y-4">
                     {% csrf_token %}
                     <div class="flex flex-wrap -mx-3 mb-6">
                         <div class="w-full md:w-1/2 px-3 mb-6 md:mb-0">

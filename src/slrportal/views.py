@@ -14,7 +14,7 @@ from django.views.decorators.http import require_POST
 
 from api import models
 from .forms import ItemForm, RsvpForm
-from .notifications import notify_admins_of_rsvp_change
+from . import notifications
 
 
 def home(request: HttpRequest) -> HttpResponse:
@@ -48,7 +48,7 @@ def party_detail(request: HttpRequest, edition: str) -> HttpResponse:
 
 @login_required
 @require_POST
-def assign_item(request: HttpRequest, item_id: str, person_id: str) -> HttpResponse:
+def claim_item(request: HttpRequest, item_id: str, person_id: str) -> HttpResponse:
     task = get_object_or_404(models.Item, id=item_id)
     person = get_object_or_404(models.Person, id=person_id)
     if request.user != person and not request.user.is_superuser:
@@ -62,13 +62,14 @@ def assign_item(request: HttpRequest, item_id: str, person_id: str) -> HttpRespo
         return HttpResponseBadRequest("Not attending")
     task.assigned_to.add(person)
     task.save()
+    notifications.notify_admins_of_item_change(task, person, "claimed")
     url = reverse("party", kwargs={"edition": task.party.edition})
     return redirect(url)
 
 
 @login_required
 @require_POST
-def unassign_item(request: HttpRequest, item_id: str, person_id: str) -> HttpResponse:
+def unclaim_item(request: HttpRequest, item_id: str, person_id: str) -> HttpResponse:
     task = get_object_or_404(models.Item, id=item_id)
     if task.party.closed:
         return HttpResponseBadRequest("Party is closed")
@@ -77,13 +78,14 @@ def unassign_item(request: HttpRequest, item_id: str, person_id: str) -> HttpRes
         return HttpResponseBadRequest("You can only unassign items from yourself")
     task.assigned_to.remove(person)
     task.save()
+    notifications.notify_admins_of_item_change(task, person, "unclaimed")
     url = reverse("party", kwargs={"edition": task.party.edition})
     return redirect(url)
 
 
 @login_required
 @require_POST
-def add_item(request: HttpRequest, edition: str) -> HttpResponse:
+def create_item(request: HttpRequest, edition: str) -> HttpResponse:
     party = get_object_or_404(models.Party, edition=edition)
     if party.closed:
         return HttpResponseBadRequest("Party is closed")
@@ -101,8 +103,12 @@ def add_item(request: HttpRequest, edition: str) -> HttpResponse:
     if invite.status == "N":
         return HttpResponseBadRequest("Not attending")
     url = reverse("party", kwargs={"edition": party.edition})
+    action = "created"
     if form.cleaned_data["claim"]:
         item.assigned_to.add(form.cleaned_data["person_id"])
+        action += " and claimed"
+    item.save()
+    notifications.notify_admins_of_item_change(item, person, action)
     return redirect(url)
 
 
@@ -139,7 +145,7 @@ def update_rsvp(request: HttpRequest, edition: str) -> HttpResponse:
                 item.save()
     url = reverse("party", kwargs={"edition": party.edition})
     if old_status != invite.status:
-        notify_admins_of_rsvp_change(person, party, invite)
+        notifications.notify_admins_of_rsvp_change(person, party, invite)
     return redirect(url)
 
 
