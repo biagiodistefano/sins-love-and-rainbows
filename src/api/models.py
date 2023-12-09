@@ -12,7 +12,13 @@ from markdownfield.models import MarkdownField, RenderedMarkdownField
 from markdownfield.validators import VALIDATOR_STANDARD
 
 
-class LowerCharField(models.CharField):
+class StrippedCharField(models.CharField):
+    def get_prep_value(self, value: str | None) -> str | None:
+        value = super().get_prep_value(value)
+        return value if value is None else value.strip()
+
+
+class LowerCharField(StrippedCharField):
     def get_prep_value(self, value: str | None) -> str | None:
         value = super().get_prep_value(value)
         return value if value is None else value.lower()
@@ -265,9 +271,9 @@ class ExternalLink(models.Model):
 class Item(models.Model):
     party = models.ForeignKey(Party, on_delete=models.CASCADE)
     category = models.CharField(max_length=30, db_index=True, choices=(('F', 'Food'), ('D', 'Drink'), ('O', 'Other')))
-    name = models.CharField(max_length=120, db_index=True)
-    quantity = models.CharField(max_length=30, db_index=True, null=True, blank=True)
-    description = models.CharField(max_length=250, db_index=True, null=True, blank=True)
+    name = StrippedCharField(max_length=120, db_index=True)
+    quantity = StrippedCharField(max_length=30, db_index=True, null=True, blank=True)
+    description = StrippedCharField(max_length=250, db_index=True, null=True, blank=True)
     url = models.URLField(db_index=True, null=True, blank=True)
     ingredients = models.ManyToManyField(Ingredient, blank=True)
     assigned_to = models.ManyToManyField(Person, blank=True)
