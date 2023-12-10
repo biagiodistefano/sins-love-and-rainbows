@@ -219,3 +219,12 @@ DEFAULT_FROM_EMAIL = config('DEFAULT_FROM_EMAIL')
 DRY_EMAILS = False
 EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
 ADMINS = [("Biagio", "me+slr@biagiodistefano.io")]
+
+
+CELERY_BROKER_URL = 'amqp://localhost'
+CELERY_ACCEPT_CONTENT = ["application/json", "application/x-python-serialize"]
+CELERY_RESULT_EXTENDED = True
+CELERY_TASK_SERIALIZER = "pickle"
+CELERY_RESULT_SERIALIZER = "pickle"
+CELERY_TIMEZONE = TIME_ZONE
+CELERY_TASK_ALWAYS_EAGER = config("CELERY_TASK_ALWAYS_EAGER", cast=bool, default=False)

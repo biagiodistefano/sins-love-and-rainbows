@@ -1,0 +1,10 @@
+[Unit]
+Description=mediabot celery daemon
+
+[Service]
+User=biagio
+WorkingDirectory=/home/biagio/sinsloveandrainbows/src
+ExecStart=/home/biagio/sinsloveandrainbows/.venv/bin/celery -A sinsloveandrainbows worker -l INFO
+
+[Install]
+WantedBy=multi-user.target

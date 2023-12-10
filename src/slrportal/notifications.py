@@ -2,10 +2,12 @@ from django.conf import settings
 from django.contrib.sites.models import Site
 from django.core.mail import send_mail
 from django.shortcuts import reverse
+from celery import shared_task
 
 from api import models
 
 
+@shared_task
 def notify_admins_of_rsvp_change(person: models.Person, party: models.Party, rsvp: models.Invite) -> None:
     """
     Send an email notification to admins about an RSVP change.
@@ -33,6 +35,7 @@ def notify_admins_of_rsvp_change(person: models.Person, party: models.Party, rsv
     )
 
 
+@shared_task
 def notify_admins_of_item_change(item: models.Item, person: models.Person, action: str) -> None:
     site = Site.objects.get_current()
     party_url = f"https://{site.domain}" + reverse('party', kwargs={"edition": item.party.edition})
