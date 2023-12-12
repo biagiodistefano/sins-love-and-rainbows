@@ -120,6 +120,7 @@ def delete_item(request: HttpRequest, item_id: str) -> HttpResponse:
     if request.user != item.created_by and not request.user.is_superuser:
         return HttpResponseForbidden("You can only delete items you created")
     item.delete()
+    notifications.notify_admins_of_item_change(item, request.user, "deleted")  # type: ignore
     url = reverse("party", kwargs={"edition": item.party.edition})
     return redirect(url)
 
