@@ -13,6 +13,7 @@ urlpatterns = [
     path('party/<str:edition>', views.party_detail, name='party'),
     path('item/<str:item_id>/assign/<str:person_id>', views.claim_item, name='claim_item'),
     path('item/<str:item_id>/unassign/<str:person_id>', views.unclaim_item, name='unclaim_item'),
+    path('item/<str:item_id>/delete', views.delete_item, name='delete_item'),
     path('party/<str:edition>/add-item', views.create_item, name='create_item'),
     path('party/<str:edition>/rsvp', views.update_rsvp, name='update_rsvp'),
     path('add-allergy', views.add_allergy, name='add_allergy'),

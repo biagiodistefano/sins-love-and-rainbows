@@ -61,6 +61,15 @@
                                 <span class="inline-flex text-xs leading-5 font-semibold rounded-full text-right"
                                       style="background-color: #FED7D7; color: #C53030;">Not Assigned</span>
                             {% endif %}
+                            {% if person.is_staff or item.created_by == person %}
+                                <form action="{% url 'delete_item' item_id=item.id %}" method="POST">
+                                    <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
+                                    <button type="submit"
+                                            class="inline-flex text-xs leading-5 font-semibold rounded-full text-right"
+                                            style="background-color: #FED7D7; color: #C53030;">Delete
+                                    </button>
+                                </form>
+                            {% endif %}
                             {% if person.is_staff %}
                                 <div class="flex flex-wrap justify-left max-w-md mx-auto">
                                     {% for assignee in item.assigned_to.all %}
@@ -98,7 +107,7 @@
                         <div class="w-full md:w-1/2 px-3 mb-6 md:mb-0">
                             <label for="id_name"
                                    class="block uppercase tracking-wide text-gray-700 text-xs font-bold mb-2">
-                                Name
+                                Item Name
                             </label>
                             <input type="text" name="name" id="id_name"
                                    class="appearance-none block w-full bg-gray-200 text-gray-700 border border-gray-200 rounded py-3 px-4 leading-tight focus:outline-none focus:bg-white focus:border-gray-500"

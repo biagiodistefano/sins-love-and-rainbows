@@ -107,8 +107,20 @@ def create_item(request: HttpRequest, edition: str) -> HttpResponse:
     if form.cleaned_data["claim"]:
         item.assigned_to.add(form.cleaned_data["person_id"])
         action += " and claimed"
+    item.created_by = person
     item.save()
     notifications.notify_admins_of_item_change(item, person, action)
+    return redirect(url)
+
+
+@login_required
+@require_POST
+def delete_item(request: HttpRequest, item_id: str) -> HttpResponse:
+    item = get_object_or_404(models.Item, id=item_id)
+    if request.user != item.created_by and not request.user.is_superuser:
+        return HttpResponseForbidden("You can only delete items you created")
+    item.delete()
+    url = reverse("party", kwargs={"edition": item.party.edition})
     return redirect(url)
 
 

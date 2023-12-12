@@ -277,6 +277,7 @@ class Item(models.Model):
     url = models.URLField(db_index=True, null=True, blank=True)
     ingredients = models.ManyToManyField(Ingredient, blank=True)
     assigned_to = models.ManyToManyField(Person, blank=True)
+    created_by = models.ForeignKey(Person, on_delete=models.CASCADE, null=True, blank=True, related_name='created_by')
 
     @property
     def allergic_people(self) -> models.QuerySet:
