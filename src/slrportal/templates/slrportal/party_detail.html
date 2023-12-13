@@ -52,16 +52,25 @@
                     <h4 class="text-2xl font-bold text-center mt-4">Hello, {{ person.get_short_name }}!</h4>
                 </div>
 
-                {% if person.is_staff %}
+                {% if person.is_staff or invite %}
                     <!--- Yes: chips for party.yes_people --->
                     <div class="mt-4 px-2">
                         <h5 class="text-xl font-bold text-center mb-2">Confirmed ({{ party.yes_count }}):</h5>
                         <div class="flex flex-wrap justify-center max-w-md mx-auto">
-                            {% for yes_person in party.yes_people %}
-                                <span class="bg-green-200 text-green-800 text-xs font-semibold m-1 px-2 py-0.5 rounded dark:bg-green-700 dark:text-green-200">{{ yes_person.person.get_display_name }}</span>
-                            {% empty %}
-                                <p class="text-center">No confirmed guests yet.</p>
-                            {% endfor %}
+                            {% if person.is_staff %}
+                                {% for yes_person in party.yes_people %}
+                                    <span class="bg-green-200 text-green-800 text-xs font-semibold m-1 px-2 py-0.5 rounded dark:bg-green-700 dark:text-green-200">{{ yes_person.person.get_display_name }}</span>
+                                {% empty %}
+                                    <p class="text-center">No confirmed guests yet.</p>
+                                {% endfor %}
+                            {% else %}
+                                {% for yes_person in party.guest_list.yes %}
+                                    <span class="bg-green-200 text-green-800 text-xs font-semibold m-1 px-2 py-0.5 rounded dark:bg-green-700 dark:text-green-200">{{ yes_person }}</span>
+                                {% empty %}
+                                    <p class="text-center">No confirmed guests yet.</p>
+                                {% endfor %}
+
+                            {% endif %}
                         </div>
                     </div>
 
@@ -69,11 +78,19 @@
                     <div class="mt-4 px-2">
                         <h5 class="text-xl font-bold text-center mb-2">Maybe ({{ party.maybe_count }}):</h5>
                         <div class="flex flex-wrap justify-center max-w-md mx-auto">
-                            {% for maybe_person in party.maybe_people %}
-                                <span class="bg-yellow-200 text-yellow-800 text-xs font-semibold m-1 px-2 py-0.5 rounded dark:bg-yellow-700 dark:text-yellow-200">{{ maybe_person.person.get_display_name }}</span>
-                            {% empty %}
-                                <p class="text-center">No 'maybe' responses yet.</p>
-                            {% endfor %}
+                            {% if person.is_staff %}
+                                {% for maybe_person in party.maybe_people %}
+                                    <span class="bg-yellow-200 text-yellow-800 text-xs font-semibold m-1 px-2 py-0.5 rounded dark:bg-yellow-700 dark:text-yellow-200">{{ maybe_person.person.get_display_name }}</span>
+                                {% empty %}
+                                    <p class="text-center">No 'maybe' responses yet.</p>
+                                {% endfor %}
+                            {% else %}
+                                {% for maybe_person in party.guest_list.maybe %}
+                                    <span class="bg-yellow-200 text-yellow-800 text-xs font-semibold m-1 px-2 py-0.5 rounded dark:bg-yellow-700 dark:text-yellow-200">{{ maybe_person }}</span>
+                                {% empty %}
+                                    <p class="text-center">No 'maybe' responses yet.</p>
+                                {% endfor %}
+                            {% endif %}
                         </div>
                     </div>
                 {% endif %}
