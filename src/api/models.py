@@ -346,7 +346,10 @@ class Item(models.Model):
         return self.party.edition
 
     def __str__(self):
-        return f"{self.name} @ {self.party}"
+        base_str = f"{self.name} @ {self.party}"
+        if self.assigned_to.exists():
+            return f"{base_str} ({', '.join([p.get_display_name() for p in self.assigned_to.all()])})"
+        return base_str
 
     class Meta:
         indexes = [
