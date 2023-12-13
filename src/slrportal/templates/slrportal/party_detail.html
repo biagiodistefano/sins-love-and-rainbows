@@ -58,7 +58,7 @@
                         <h5 class="text-xl font-bold text-center mb-2">Confirmed ({{ party.yes_count }}):</h5>
                         <div class="flex flex-wrap justify-center max-w-md mx-auto">
                             {% for yes_person in party.yes_people %}
-                                <span class="bg-green-200 text-green-800 text-xs font-semibold m-1 px-2 py-0.5 rounded dark:bg-green-700 dark:text-green-200">{{ yes_person.person.get_full_name }}</span>
+                                <span class="bg-green-200 text-green-800 text-xs font-semibold m-1 px-2 py-0.5 rounded dark:bg-green-700 dark:text-green-200">{{ yes_person.person.get_display_name }}</span>
                             {% empty %}
                                 <p class="text-center">No confirmed guests yet.</p>
                             {% endfor %}
@@ -70,7 +70,7 @@
                         <h5 class="text-xl font-bold text-center mb-2">Maybe ({{ party.maybe_count }}):</h5>
                         <div class="flex flex-wrap justify-center max-w-md mx-auto">
                             {% for maybe_person in party.maybe_people %}
-                                <span class="bg-yellow-200 text-yellow-800 text-xs font-semibold m-1 px-2 py-0.5 rounded dark:bg-yellow-700 dark:text-yellow-200">{{ maybe_person.person.get_full_name }}</span>
+                                <span class="bg-yellow-200 text-yellow-800 text-xs font-semibold m-1 px-2 py-0.5 rounded dark:bg-yellow-700 dark:text-yellow-200">{{ maybe_person.person.get_display_name }}</span>
                             {% empty %}
                                 <p class="text-center">No 'maybe' responses yet.</p>
                             {% endfor %}
@@ -83,7 +83,7 @@
                     <div class="text-center mt-4">
                         <p><b>Sorry, this Party is closed</b>!<br>You cannot update your RSVP anymore.</p>
                     </div>
-                {% elif invite  %}
+                {% elif invite %}
                     <div class="text-center mt-4">
                         {% if not party.max_people or party.yes_count < party.max_people or invite.status == 'Y' %}
                             <p>You are invited!</p>
@@ -114,6 +114,23 @@
                                         Maybe
                                     </label>
                                 </div>
+                                <div class="flex items-center justify-center space-x-2 md:space-x-4">
+                                    <input type="checkbox" id="show_in_guest_list" name="show_in_guest_list"
+                                            {% if invite.show_in_guest_list %} checked {% endif %}>
+                                    <label for="show_in_guest_list" class="flex items-center">Show me in the guest
+                                        list</label>
+                                    <div class="relative flex items-center ml-2">
+                                        <div class="group">
+                                            <span class="cursor-pointer material-icons-outlined text-gray-500">ℹ</span>
+                                            <div class="absolute opacity-0 group-hover:opacity-100 bg-gray-700 text-white text-xs rounded-lg p-2 -mt-12 ml-4 w-64 transition-opacity duration-300 ease-in-out z-10">
+                                                If checked, your name will be visible in the guest list above for
+                                                all other invited people and will be displayed
+                                                as "{{ person.get_display_name }}".
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
                                 <button type="submit"
                                         class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded mt-4">
                                     Update RSVP

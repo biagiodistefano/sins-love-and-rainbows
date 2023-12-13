@@ -66,6 +66,32 @@ class Person(AbstractUser):
     def full_name(self) -> str:
         return self.get_full_name()
 
+    def get_display_name(self) -> str:
+        users_with_same_first_name = Person.objects.filter(
+            first_name=self.first_name
+        ).exclude(id=self.id)
+
+        if not users_with_same_first_name:
+            return self.first_name
+
+        min_chars = 1
+        while True:
+            unique_last_name = True
+            for user in users_with_same_first_name:
+                if user.last_name.startswith(self.last_name[:min_chars]):
+                    unique_last_name = False
+                    break
+
+            if unique_last_name:
+                break
+            min_chars += 1
+
+            # Avoid infinite loop in cases of identical names
+            if min_chars >= len(self.last_name):
+                break
+
+        return f"{self.first_name} {self.last_name[:min_chars]}".strip()
+
     def is_invited_to(self, party: 'Party') -> bool:
         return party.invite_set.filter(person=self).exists()
 
@@ -171,6 +197,26 @@ class Party(models.Model):
     def is_invited(self, person: Person) -> bool:
         return self.invite_set.filter(person=person).exists()
 
+    def guest_list(self) -> dict[str, list[str]]:
+        yes = [invite.person.get_display_name() for invite in self.yes_people().filter(show_in_guest_list=True)]
+        private_yes_count = self.yes_people().filter(show_in_guest_list=False).count()
+        if private_yes_count > 0:
+            if yes:
+                yes.append(f"+ {private_yes_count} other(s)")
+            else:
+                yes = [f"{private_yes_count} attending"]
+        maybe = [invite.person.get_display_name() for invite in self.maybe_people().filter(show_in_guest_list=True)]
+        private_maybe_count = self.maybe_people().filter(show_in_guest_list=False).count()
+        if private_maybe_count > 0:
+            if maybe:
+                maybe.append(f"+ {private_maybe_count} other(s)")
+            else:
+                maybe = [f"{private_maybe_count} maybe"]
+        return {
+            "yes": yes,
+            "maybe": maybe,
+        }
+
     def __str__(self):
         return self.name
 
@@ -187,6 +233,7 @@ class Invite(models.Model):
         db_index=True, null=True, blank=True
     )  # noqa: E501
     last_updated = models.DateTimeField(auto_now=True, db_index=True)
+    show_in_guest_list = models.BooleanField(default=False, db_index=True)
 
     @property
     def party_edition(self) -> str:

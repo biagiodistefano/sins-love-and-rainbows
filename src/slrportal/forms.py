@@ -30,3 +30,4 @@ class RsvpForm(forms.Form):
 
     person_id = forms.CharField(widget=forms.HiddenInput())
     rsvp = forms.ChoiceField(choices=CHOICES, label='RSVP')
+    show_in_guest_list = forms.BooleanField(label='Show in guest list', initial=False, required=False)

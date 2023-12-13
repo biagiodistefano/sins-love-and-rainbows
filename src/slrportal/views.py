@@ -150,6 +150,10 @@ def update_rsvp(request: HttpRequest, edition: str) -> HttpResponse:
             if party.max_people and party.yes_count() >= party.max_people:
                 return HttpResponseBadRequest("Party is full")
         invite.status = form.cleaned_data["rsvp"]
+        if status.upper() == "N":
+            invite.show_in_guest_list = False
+        else:
+            invite.show_in_guest_list = form.cleaned_data["show_in_guest_list"]
         invite.save()
         if invite.status == "N":
             items = models.Item.objects.filter(party=party, assigned_to=person)

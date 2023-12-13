@@ -73,7 +73,7 @@
                             {% if person.is_staff %}
                                 <div class="flex flex-wrap justify-left max-w-md mx-auto">
                                     {% for assignee in item.assigned_to.all %}
-                                        <span class="bg-green-200 text-green-800 text-xs font-semibold m-1 px-2 py-0.5 rounded dark:bg-green-700 dark:text-green-200">{{ assignee.get_full_name }}</span>
+                                        <span class="bg-green-200 text-green-800 text-xs font-semibold m-1 px-2 py-0.5 rounded dark:bg-green-700 dark:text-green-200">{{ assignee.get_display_name }}</span>
                                     {% endfor %}
                                 </div>
                             {% endif %}
