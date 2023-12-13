@@ -153,7 +153,7 @@ MEDIA_URL = '/media/'
 
 STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 
-SITE_ID = 1
+
 LOGIN_REDIRECT_URL = '/'
 LOGOUT_REDIRECT_URL = '/'
 
