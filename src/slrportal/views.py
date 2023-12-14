@@ -27,13 +27,27 @@ def redirect_url(request: HttpRequest, short_url: str):
 
 
 def get_next_party(request: HttpRequest) -> HttpResponse:
-    try:
-        next_party = models.Party.objects.filter(date_and_time__gte=timezone.now(), closed=False).earliest(
-            'date_and_time'
-        )
-    except models.Party.DoesNotExist:
-        raise Http404("No upcoming parties found.")
-    url = reverse('party', kwargs={"edition": next_party.edition})
+    upcoming_parties = models.Party.objects.filter(
+        date_and_time__gte=timezone.now(),
+        closed=False
+    ).order_by('date_and_time')
+
+    for party in upcoming_parties:
+        # If the party is not private, redirect to it
+        if not party.private:
+            return redirect_to_party(party)
+
+        # If the party is private, check if the user is invited
+        if request.user.is_authenticated:
+            if models.Invite.objects.filter(party=party, person=request.user).first():
+                return redirect_to_party(party)
+
+    # If no suitable party is found
+    raise Http404("No upcoming parties found or not invited to any.")
+
+
+def redirect_to_party(party: models.Party) -> HttpResponse:
+    url = reverse('party', kwargs={"edition": party.edition})
     return redirect(url)
 
 
@@ -42,6 +56,8 @@ def party_detail(request: HttpRequest, edition: str) -> HttpResponse:
     invite = None
     if request.user.is_authenticated:
         invite = models.Invite.objects.filter(party=party, person=request.user).first()
+    if party.private and invite is None:
+        raise Http404("No upcoming parties found.")
     context = {'party': party, 'person': request.user, 'invite': invite}
     return render(request, 'slrportal/party_detail.html', context)
 

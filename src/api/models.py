@@ -108,6 +108,7 @@ class Party(models.Model):
     description_rendered = RenderedMarkdownField(null=True, blank=True)
     logo = models.ImageField(upload_to='logos', null=True, blank=True)
     closed = models.BooleanField(default=True, db_index=True)
+    private = models.BooleanField(default=False, db_index=True)
     max_people = models.PositiveSmallIntegerField(default=0, db_index=True)
 
     @classmethod
@@ -373,7 +374,7 @@ class PartyFile(models.Model):
 
 @receiver(post_save, sender=Party)
 def create_invite(sender, instance, created, **kwargs):
-    if created:
+    if created and not instance.private:
         for person in Person.objects.all():
             Invite.objects.create(person=person, party=instance, status=None)
 
