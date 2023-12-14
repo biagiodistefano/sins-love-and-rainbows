@@ -218,6 +218,22 @@ class Party(models.Model):
             "maybe": maybe,
         }
 
+    def get_people_with_no_items(self) -> models.QuerySet:
+        # Get people who have RSVP'd 'Yes' or 'Maybe'
+        rsvp_people = self.invite_set.filter(status__in=['Y', 'M']).values_list('person', flat=True)
+
+        # Get people who have been assigned to items
+        assigned_people = self.item_set.filter(assigned_to__isnull=False).values_list('assigned_to', flat=True)
+
+        # Filter out people who have been assigned any items
+        people_with_no_items = Person.objects.filter(
+            id__in=rsvp_people
+        ).exclude(
+            id__in=assigned_people
+        )
+
+        return people_with_no_items
+
     def __str__(self):
         return self.name
 
