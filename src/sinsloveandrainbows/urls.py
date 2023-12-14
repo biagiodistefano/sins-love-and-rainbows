@@ -17,8 +17,11 @@ Including another URLconf
 from django.conf import settings
 from django.contrib import admin
 from django.urls import include, path
+from django.views.generic import TemplateView
 
 from api.api import api
+
+handler404 = TemplateView.as_view(template_name='404.html')
 
 urlpatterns = [
     path(settings.ADMIN_URL, admin.site.urls),
