@@ -48,4 +48,5 @@ def test_short_url(api_client: Client) -> None:
     response = api_client.delete("/api/s/bd2")
     assert response.status_code == 204
     response = api_client.get("/s/bd2")
+    print(response.content)
     assert response.status_code == 404

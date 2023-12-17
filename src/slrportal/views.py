@@ -5,10 +5,12 @@ from django.contrib.auth.decorators import login_required
 from django.core import exceptions
 from django.db import transaction
 from django.http import (
-    Http404, HttpResponse, HttpResponseBadRequest, HttpResponseForbidden, HttpResponseRedirect, JsonResponse,
+    Http404, HttpResponse, HttpResponseBadRequest, HttpResponseForbidden, HttpResponseNotFound,
+    HttpResponseRedirect, JsonResponse,
 )
 from django.http.request import HttpRequest
 from django.shortcuts import get_object_or_404, redirect, render, reverse
+from django.template import loader
 from django.utils import timezone
 from django.views.decorators.http import require_POST
 
@@ -247,3 +249,12 @@ def delete_allergy(request: HttpRequest, allergy_id: int) -> HttpResponse:
 
 def privacy_policy(request: HttpRequest) -> HttpResponse:
     return render(request, 'slrportal/privacy_policy.html')
+
+
+def custom_404(request, exception: Exception) -> HttpResponseNotFound:
+    template = loader.get_template('404.html')
+    context = {
+        'request_path': request.path,
+        # You can add more context variables here if needed
+    }
+    return HttpResponseNotFound(template.render(context, request))
