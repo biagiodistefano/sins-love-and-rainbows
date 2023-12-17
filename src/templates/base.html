@@ -12,73 +12,85 @@
     {% endblock %}
 
 </head>
-<body class="bg-gray-100">
+<body class="bg-gray-100 flex flex-col min-h-screen">
 <header>
     {% if request.user.is_authenticated %}
-    <nav class="bg-blue-600 text-white">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex justify-between h-16">
-                <div class="flex">
-                    <!-- Home link -->
-                    <div class="flex-shrink-0 flex items-center">
-                        <a href="{% url 'home' %}" class="text-white px-3 py-2 rounded-md text-sm font-medium">Home</a>
+        <nav class="bg-blue-600 text-white">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="flex justify-between h-16">
+                    <div class="flex">
+                        <!-- Home link -->
+                        <div class="flex-shrink-0 flex items-center">
+                            <a href="{% url 'home' %}"
+                               class="text-white px-3 py-2 rounded-md text-sm font-medium">Home</a>
+                        </div>
+                        <!-- Breadcrumbs (possibly hidden on small screens) -->
+                        {% block breadcrumbs %}
+                            <!-- Breadcrumb items will be inserted here -->
+                        {% endblock %}
                     </div>
-                    <!-- Breadcrumbs (possibly hidden on small screens) -->
-                    {% block breadcrumbs %}
-                        <!-- Breadcrumb items will be inserted here -->
-                    {% endblock %}
-                </div>
 
-                <!-- Right section for user actions -->
-                <div class="hidden md:flex items-center">
-                    <!-- Conditional admin panel link for staff -->
+                    <!-- Right section for user actions -->
+                    <div class="hidden md:flex items-center">
+                        <!-- Conditional admin panel link for staff -->
+                        {% if request.user.is_staff %}
+                            <a href="{% url 'admin:index' %}" class="px-3 py-2 rounded-md text-sm font-medium">Admin
+                                Panel</a>
+                        {% endif %}
+                        <!-- Profile and next party links -->
+                        <a href="{% url 'next_party' %}" class="text-white px-3 py-2 rounded-md text-sm font-medium">Next
+                            Party</a>
+                        <a href="{% url 'profile' %}" class="text-white px-3 py-2 rounded-md text-sm font-medium">Profile</a>
+                        <!-- Logout button -->
+                        <form action="{% url 'logout' %}" method="post" class="px-3 py-2">
+                            {% csrf_token %}
+                            <button type="submit" class="text-white bg-transparent border-none cursor-pointer">Log out
+                            </button>
+                        </form>
+                    </div>
+
+                    <!-- Mobile menu button -->
+                    <div class="-mr-2 flex md:hidden">
+                        <button type="button"
+                                class="bg-blue-600 inline-flex items-center justify-center p-2 rounded-md text-white hover:text-white hover:bg-blue-500 focus:outline-none focus:bg-blue-500 focus:text-white"
+                                id="menu-button">
+                            <span class="sr-only">Open main menu</span>
+                            <!-- Icon for the menu button -->
+                            <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                 stroke="currentColor" aria-hidden="true">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                      d="M4 6h16M4 12h16m-7 6h7"/>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Mobile menu, show/hide based on menu state. -->
+            <div class="hidden md:hidden" id="mobile-menu">
+                <div class="px-2 pt-2 pb-3 space-y-1 sm:px-3">
                     {% if request.user.is_staff %}
-                        <a href="{% url 'admin:index' %}" class="px-3 py-2 rounded-md text-sm font-medium">Admin Panel</a>
+                        <a href="{% url 'admin:index' %}"
+                           class="text-white block px-3 py-2 rounded-md text-base font-medium">Admin Panel</a>
                     {% endif %}
-                    <!-- Profile and next party links -->
-                    <a href="{% url 'next_party' %}" class="text-white px-3 py-2 rounded-md text-sm font-medium">Next Party</a>
-                    <a href="{% url 'profile' %}" class="text-white px-3 py-2 rounded-md text-sm font-medium">Profile</a>
-                    <!-- Logout button -->
-                    <form action="{% url 'logout' %}" method="post" class="px-3 py-2">
-                        {% csrf_token %}
-                        <button type="submit" class="text-white bg-transparent border-none cursor-pointer">Log out</button>
-                    </form>
-                </div>
-
-                <!-- Mobile menu button -->
-                <div class="-mr-2 flex md:hidden">
-                    <button type="button" class="bg-blue-600 inline-flex items-center justify-center p-2 rounded-md text-white hover:text-white hover:bg-blue-500 focus:outline-none focus:bg-blue-500 focus:text-white" id="menu-button">
-                        <span class="sr-only">Open main menu</span>
-                        <!-- Icon for the menu button -->
-                        <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7"/>
-                        </svg>
-                    </button>
+                    <a href="{% url 'next_party' %}"
+                       class="text-white block px-3 py-2 rounded-md text-base font-medium">Next Party</a>
+                    <a href="{% url 'profile' %}" class="text-white block px-3 py-2 rounded-md text-base font-medium">Profile</a>
+                    <!-- Logout link for mobile -->
+                    <a href="{% url 'logout' %}" class="text-white block px-3 py-2 rounded-md text-base font-medium">Log
+                        out</a>
                 </div>
             </div>
-        </div>
-
-        <!-- Mobile menu, show/hide based on menu state. -->
-        <div class="hidden md:hidden" id="mobile-menu">
-            <div class="px-2 pt-2 pb-3 space-y-1 sm:px-3">
-                {% if request.user.is_staff %}
-                    <a href="{% url 'admin:index' %}" class="text-white block px-3 py-2 rounded-md text-base font-medium">Admin Panel</a>
-                {% endif %}
-                <a href="{% url 'next_party' %}" class="text-white block px-3 py-2 rounded-md text-base font-medium">Next Party</a>
-                <a href="{% url 'profile' %}" class="text-white block px-3 py-2 rounded-md text-base font-medium">Profile</a>
-                <!-- Logout link for mobile -->
-                <a href="{% url 'logout' %}" class="text-white block px-3 py-2 rounded-md text-base font-medium">Log out</a>
-            </div>
-        </div>
-    </nav>
+        </nav>
     {% endif %}
 </header>
 
 
-
-{% block content %}
-    <!-- Main content will go here -->
-{% endblock %}
+<div class="flex-grow">
+    {% block content %}
+        <!-- Main content will go here -->
+    {% endblock %}
+</div>
 
 <!-- Footer can be added here if needed -->
 {% block scripts %}
@@ -120,26 +132,29 @@
 <footer class="bg-gray-800 text-white mt-8">
     <div class="container mx-auto px-6 py-4">
         <div class="flex justify-between items-center">
-            <p class="text-white text-sm text-center sm:text-left">© 2023 <a href="https://biagiodistefano.io" target="_blank">Biagio Distefano</a></p>
+            <p class="text-white text-sm text-center sm:text-left">© 2023 <a href="https://biagiodistefano.io"
+                                                                             target="_blank">Biagio Distefano</a></p>
 
             <div class="flex items-center">
-                <a href="{% url 'privacy_policy' %}" target="_blank" class="text-white hover:text-gray-200 text-sm ml-4">Privacy Policy</a>
-                <a href="mailto:me+slr@biagiodistefano.io" class="text-white hover:text-gray-200 text-sm ml-4">Contact Me</a>
+                <a href="{% url 'privacy_policy' %}" target="_blank"
+                   class="text-white hover:text-gray-200 text-sm ml-4">Privacy Policy</a>
+                <a href="mailto:me+slr@biagiodistefano.io" class="text-white hover:text-gray-200 text-sm ml-4">Contact
+                    Me</a>
             </div>
         </div>
     </div>
 </footer>
 
 <script>
-// Mobile menu toggle script
-document.addEventListener('DOMContentLoaded', function () {
-    const menuButton = document.getElementById('menu-button');
-    const mobileMenu = document.getElementById('mobile-menu');
+    // Mobile menu toggle script
+    document.addEventListener('DOMContentLoaded', function () {
+        const menuButton = document.getElementById('menu-button');
+        const mobileMenu = document.getElementById('mobile-menu');
 
-    menuButton.addEventListener('click', function () {
-        mobileMenu.classList.toggle('hidden');
+        menuButton.addEventListener('click', function () {
+            mobileMenu.classList.toggle('hidden');
+        });
     });
-});
 </script>
 
 
