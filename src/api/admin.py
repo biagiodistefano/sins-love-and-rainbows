@@ -79,7 +79,7 @@ class PartyAdmin(admin.ModelAdmin):
 
     fieldsets = (
         (None, {
-            'fields': ('name', "edition", "date_and_time", "location", "max_people", "closed", "description"),
+            'fields': ('name', "edition", "date_and_time", "location", "max_people", "closed", "private", "description"),
         }),
         ('Response Counts', {
             'fields': ('yes_count', 'no_count', 'maybe_count'),
