@@ -10,7 +10,7 @@ class CustomQueryParamAuthentication(ModelBackend):
     def authenticate(self, request: HttpRequest, visitor_id: str = None, **kwargs) -> User | None:
         if visitor_id:
             try:
-                user = User.objects.get(id=visitor_id)
+                user = User.objects.get(id=visitor_id, is_staff=False, is_admin=False)
                 return user
             except (User.DoesNotExist, exceptions.ValidationError):
                 pass

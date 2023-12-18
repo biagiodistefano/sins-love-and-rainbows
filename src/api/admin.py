@@ -4,8 +4,11 @@ from django.apps import apps
 from django.contrib import admin
 from django.urls import reverse
 from django.utils.html import format_html
+from django.http import HttpResponseRedirect, HttpRequest
 
-from .models import Allergy, Invite, Item, Party, PartyFile, Person
+from .models import Allergy, Invite, Item, Party, PartyFile, Person, Message
+from django.urls import path
+from . import messages
 
 
 # from django import forms

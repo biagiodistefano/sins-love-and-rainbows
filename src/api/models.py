@@ -10,6 +10,7 @@ from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 from markdownfield.models import MarkdownField, RenderedMarkdownField
 from markdownfield.validators import VALIDATOR_STANDARD
+from django.contrib.sites.models import Site
 
 
 class StrippedCharField(models.CharField):
@@ -293,26 +294,10 @@ class Message(models.Model):
     title = models.CharField(max_length=30, db_index=True, null=True, blank=True)
     text = MarkdownField(rendered_field='text_rendered', validator=VALIDATOR_STANDARD)
     text_rendered = RenderedMarkdownField()
-    sent_at = models.DateTimeField(db_index=True, null=True, blank=True)
-    sent_to = models.ManyToManyField(Person, blank=True)
 
     @property
     def party_edition(self) -> str:
         return self.party.edition
-
-    def send(self, include_declined: bool = False) -> None:
-        for invite in self.party.invite_set.filter(
-            status__in=('Y', 'M', 'N') if include_declined else ('Y', 'M')
-        ):
-            # TODO: actually send the message
-            self.sent_to.add(invite.person)
-        self.sent_at = timezone.now()
-        self.save()
-
-    def sent_stats(self) -> str:
-        sent_to_count = self.sent_to.count()
-        not_sent_to_count = self.party.invite_set.all().count() - sent_to_count
-        return f"{sent_to_count}/{not_sent_to_count} sent/not sent"
 
     def __str__(self):
         if self.title:
@@ -320,6 +305,50 @@ class Message(models.Model):
         else:
             title = self.text[:30]
         return f"{title} @ {self.party}"
+
+
+class MessageLog(models.Model):
+    message = models.ForeignKey(Message, on_delete=models.CASCADE)
+    person = models.ForeignKey(Person, on_delete=models.CASCADE)
+    sent_at = models.DateTimeField(auto_now_add=True, db_index=True)
+    sent = models.BooleanField(default=False, db_index=True)
+    sent_via = models.CharField(
+        max_length=30, db_index=True, choices=(
+            ('W', 'WhatsApp'), ('S', 'SMS'), ("E", "Email"), ("T", "Telegram")
+        ), null=True, blank=True
+    )
+    sid = models.CharField(max_length=34, null=True, blank=True)
+    error = models.BooleanField(default=False, db_index=True)
+    error_message = models.TextField(null=True, blank=True)
+
+    def __str__(self):
+        if self.sent:
+            return f"{self.person} -> sent at {self.sent_at} (via {self.get_sent_via_display()})"
+        return f"{self.person} -> not sent"
+
+    class Meta:
+        verbose_name_plural = 'message logs'
+
+
+class PersonalLinkSent(models.Model):
+    person = models.ForeignKey(Person, on_delete=models.CASCADE)
+    party = models.ForeignKey(Party, on_delete=models.CASCADE)
+    sent = models.BooleanField(default=False, db_index=True)
+    sent_at = models.DateTimeField(auto_now_add=True, db_index=True)
+    sent_via = models.CharField(
+        max_length=30, db_index=True, choices=(
+            ('W', 'WhatsApp'), ('S', 'SMS'), ("E", "Email"), ("T", "Telegram")
+        ), null=True, blank=True
+    )
+    sid = models.CharField(max_length=34, null=True, blank=True)
+    error = models.BooleanField(default=False, db_index=True)
+    error_message = models.TextField(null=True, blank=True)
+
+    class Meta:
+        verbose_name_plural = 'Personal Links Sent'
+        index_together = [
+            ("person", "party", "sent"),
+        ]
 
 
 class ExternalLink(models.Model):

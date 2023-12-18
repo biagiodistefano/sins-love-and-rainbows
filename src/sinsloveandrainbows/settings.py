@@ -153,7 +153,6 @@ MEDIA_URL = '/media/'
 
 STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 
-
 LOGIN_REDIRECT_URL = '/'
 LOGOUT_REDIRECT_URL = '/'
 
@@ -191,21 +190,35 @@ LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
     'handlers': {
-        'file': {
+        'django_file': {
             'level': 'ERROR',
             'class': 'logging.FileHandler',
-            'filename': 'error.log',
+            'filename': 'django_error.log',  # File for logging Django errors
+        },
+        'twilio_file': {
+            'level': 'INFO',
+            'class': 'logging.FileHandler',
+            'filename': 'twilio_messages.log',  # File for logging Twilio messages
         },
         'console': {
             'level': 'ERROR',
             'class': 'logging.StreamHandler',
         },
+        'twilio_console': {
+            'level': 'INFO',
+            'class': 'logging.StreamHandler',
+        },
     },
     'loggers': {
         'django': {
-            'handlers': ['file', 'console'],
+            'handlers': ['django_file', 'console'],
             'level': 'ERROR',
             'propagate': True,
+        },
+        'twilio_whatsapp': {
+            'handlers': ['twilio_file', 'twilio_console'],
+            'level': 'INFO',
+            'propagate': False,
         },
     },
 }
@@ -222,8 +235,14 @@ else:
     EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
 ADMINS = [("Biagio", "me+slr@biagiodistefano.io")]
 
+# TWILIO
+TWILIO_ACCOUNT_SID = config('TWILIO_ACCOUNT_SID', default=None)
+TWILIO_AUTH_TOKEN = config('TWILIO_AUTH_TOKEN', default=None)
+TWILIO_FROM_WHATSAPP_NUMBER = config('TWILIO_FROM_WHATSAPP_NUMBER', default=None)
 
-CELERY_BROKER_URL = 'amqp://localhost'
+DEBUG_NUMBERS_ALLOWED = config('DEBUG_NUMBERS_ALLOWED', cast=lambda v: [s.strip() for s in v.split(',')], default="")
+
+CELERY_BROKER_URL = 'redis://localhost:6379/0'
 CELERY_ACCEPT_CONTENT = ["application/json", "application/x-python-serialize"]
 CELERY_RESULT_EXTENDED = True
 CELERY_TASK_SERIALIZER = "pickle"
