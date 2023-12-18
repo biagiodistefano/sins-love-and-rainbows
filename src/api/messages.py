@@ -70,7 +70,7 @@ def send_invitation_messages(party: models.Party) -> None:
     for invite in invites:
         person = invite.person
         if models.PersonalLinkSent.objects.filter(party=party, person=person, sent=True).exists():
-            pass
+            continue
         try:
             personal_url = f"{party_url}?visitor_id={str(person.pk)}"
             phone_number = person.clean_phone_number
