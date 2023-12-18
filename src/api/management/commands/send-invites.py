@@ -12,8 +12,9 @@ class Command(BaseCommand):
     help = "Automatically load people from a *.txt file"
 
     def add_arguments(self, parser: ArgumentParser) -> None:
-        pass
+        parser.add_argument("--no-dry", action="store_true", help="Actually send the messages", default=False)
 
     def handle(self, *args: t.Any, **options: t.Any) -> None:
         party = Party.get_next()
-        messages.send_invitation_messages(party)
+        dry = not options["no_dry"]
+        messages.send_invitation_messages(party, dry=dry)

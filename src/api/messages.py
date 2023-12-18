@@ -63,7 +63,7 @@ def send_message(msg_id: int, include_declined: bool = False) -> None:
             )
 
 
-def send_invitation_messages(party: models.Party) -> None:
+def send_invitation_messages(party: models.Party, dry: bool = True) -> None:
     site = Site.objects.get_current()
     party_url = f"https://{site.domain}" + reverse('party', kwargs={"edition": party.edition})
     invites = party.invite_set.filter(Q(status__in=["Y", "M"]) | Q(status__isnull=True)).prefetch_related('person')
@@ -78,10 +78,16 @@ def send_invitation_messages(party: models.Party) -> None:
                 continue
             if not phone_number.startswith("+"):
                 phone_number = f"+{phone_number}"
-            logger.info(f"Sending personal link to {person} ({phone_number})")
-            sid = send_whatsapp_message(
-                to=phone_number, body=TEMPLATES["slr_invitation"].format(name=person.first_name, url=personal_url)
-                )
+            log_msg = f"{party}: Sending personal link to {person} ({phone_number})"
+            if dry:
+                log_msg = f"[DRY] {log_msg}"
+                print(log_msg)
+            sid = None
+            if not dry:
+                logger.info(log_msg)
+                sid = send_whatsapp_message(
+                    to=phone_number, body=TEMPLATES["slr_invitation"].format(name=person.first_name, url=personal_url)
+                    )
             if not sid:
                 continue
             models.PersonalLinkSent.objects.create(party=party, person=person, sent=True, sid=sid)
