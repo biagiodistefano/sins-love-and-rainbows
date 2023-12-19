@@ -1,11 +1,12 @@
 import logging
+import time
 
-from celery import shared_task
 from django.conf import settings
 from django.contrib.sites.models import Site
 from django.db.models import Q
-from django.shortcuts import get_object_or_404, reverse
-from twilio.rest import Client
+from django.shortcuts import reverse
+from twilio.rest import Client as TwilioClient
+from twilio.rest.api.v2010.account.message import MessageInstance
 
 from . import models
 
@@ -22,54 +23,49 @@ This is your personal link for our upcoming Party!
 
 {url}
 
+Don't share this link with anyone else, it's only yours!""",
+    "slr_invitation_2": """Hi, {name}!
+
+You are invited to *{party}*!
+
+Here's your *personal* link to manage your invitation:
+
+{url}
+
 Don't share this link with anyone else, it's only yours!"""
 }
 
+message_statuses = ["accepted", "scheduled", "canceled", "queued", "sending",
+                    "sent", "failed", "delivered", "undelivered", "receiving", "received", "read"]
 
-def send_whatsapp_message(to: str, body: str) -> str | None:
+
+def send_whatsapp_message(to: str, body: str) -> MessageInstance | None:
     if settings.DEBUG and to not in settings.DEBUG_NUMBERS_ALLOWED:
         return None
     account_sid = settings.TWILIO_ACCOUNT_SID
     auth_token = settings.TWILIO_AUTH_TOKEN
     from_whatsapp_number = settings.TWILIO_FROM_WHATSAPP_NUMBER
-    client = Client(account_sid, auth_token)
+    client = TwilioClient(account_sid, auth_token)
+    callback_url = reverse('slr-api:twilio_status_callback')
     message = client.messages.create(
         body=body,
         from_=f"whatsapp:{from_whatsapp_number}",
-        to=f"whatsapp:{to}"
+        to=f"whatsapp:{to}",
+        status_callback="http://5179-2001-871-25c-ec13-b10f-47bd-fe9d-12cf.ngrok-free.app" + callback_url,
     )
-    return message.sid
+    return message
 
 
-@shared_task
-def send_message(msg_id: int, include_declined: bool = False) -> None:
-    message: models.Message = get_object_or_404(models.Message, pk=msg_id)
-    people = message.party.invite_set.filter(status__in=["Y", "M"] if not include_declined else ["Y", "M", "N"])
-    for person in people:
-        if models.MessageLog.objects.filter(message=message, person=person, sent=True).exists():
-            continue
-        try:
-            phone_number = person.clean_phone_number
-            if not phone_number:
-                continue
-            if not phone_number.startswith("+"):
-                phone_number = f"+{phone_number}"
-            sid = send_whatsapp_message(to=phone_number, body=message.text)
-            models.MessageLog.objects.create(message=message, person=person, sid=sid, sent_via="W", sent=True)
-        except Exception as e:
-            logger.error(f"Error sending message to {person}: {e}")
-            models.MessageLog.objects.create(
-                message=message, person=person, error=True, sent_via="W", error_message=str(e)
-            )
-
-
-def send_invitation_messages(party: models.Party, dry: bool = True) -> None:
+def send_invitation_messages(party: models.Party, dry: bool = True, wait: bool = False, timeout: float = 5.0) -> None:
     site = Site.objects.get_current()
     party_url = f"https://{site.domain}" + reverse('party', kwargs={"edition": party.edition})
     invites = party.invite_set.filter(Q(status__in=["Y", "M"]) | Q(status__isnull=True)).prefetch_related('person')
+    sent = []
     for invite in invites:
         person = invite.person
-        if models.PersonalLinkSent.objects.filter(party=party, person=person, sent=True).exists():
+        if pls := models.PersonalLinkSent.objects.filter(party=party, person=person, sent=True).first():
+            sent.append(pls)
+            logger.info(f"Skipping {person}: Already sent (status: {pls.status})")
             continue
         try:
             personal_url = f"{party_url}?visitor_id={str(person.pk)}"
@@ -82,17 +78,26 @@ def send_invitation_messages(party: models.Party, dry: bool = True) -> None:
             if dry:
                 log_msg = f"[DRY] {log_msg}"
                 print(log_msg)
-            sid = None
+            message: MessageInstance | None = None
             if not dry:
-                logger.info(log_msg)
-                sid = send_whatsapp_message(
-                    to=phone_number, body=TEMPLATES["slr_invitation"].format(name=person.first_name, url=personal_url)
+                message = send_whatsapp_message(
+                    to=phone_number, body=TEMPLATES["slr_invitation_2"].format(
+                        name=person.first_name, party=str(party), url=personal_url
                     )
-            if not sid:
+                )
+            if not message:
                 continue
-            models.PersonalLinkSent.objects.create(party=party, person=person, sent=True, sid=sid)
+            pls = models.PersonalLinkSent.objects.create(party=party, person=person, sent=True, sid=message.sid)
+            sent.append(pls)
+            logger.info(log_msg)
         except Exception as e:
             logger.error(f"Error sending message to {person}: {e}")
             models.PersonalLinkSent.objects.create(
                 party=party, person=person, error=True, error_message=str(e)
             )
+    if wait:
+        print("Refreshing statuses...")
+        time.sleep(timeout)
+        for pls in sent:
+            pls.refresh_from_db()
+            logger.info(f"{pls.person}: {pls.status}")

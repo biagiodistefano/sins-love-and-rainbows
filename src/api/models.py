@@ -98,7 +98,7 @@ class Person(AbstractUser):
 
 
 class Party(models.Model):
-    name = models.CharField(max_length=30, db_index=True, unique=True)
+    name = models.CharField(max_length=128, db_index=True, unique=True)
     edition = LowerCharField(max_length=30, db_index=True, unique=True)
     date_and_time = models.DateTimeField(db_index=True)
     location = models.CharField(max_length=120, db_index=True, null=True, blank=True)
@@ -341,6 +341,7 @@ class PersonalLinkSent(models.Model):
         ), null=True, blank=True
     )
     sid = models.CharField(max_length=34, null=True, blank=True)
+    status = models.CharField(max_length=30, db_index=True, null=True, blank=True)
     error = models.BooleanField(default=False, db_index=True)
     error_message = models.TextField(null=True, blank=True)
 

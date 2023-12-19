@@ -13,8 +13,9 @@ class Command(BaseCommand):
 
     def add_arguments(self, parser: ArgumentParser) -> None:
         parser.add_argument("--no-dry", action="store_true", help="Actually send the messages", default=False)
+        parser.add_argument("--wait", action="store_true", help="Wait between messages", default=False)
 
     def handle(self, *args: t.Any, **options: t.Any) -> None:
         party = Party.get_next()
         dry = not options["no_dry"]
-        messages.send_invitation_messages(party, dry=dry)
+        messages.send_invitation_messages(party, dry=dry, wait=options["wait"])
