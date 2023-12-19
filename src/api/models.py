@@ -1,8 +1,11 @@
+import re
 import urllib.parse
 import uuid
-from typing import Optional
+from typing import Any, Optional
 
 from django.contrib.auth.models import AbstractUser
+from django.contrib.sites.models import Site
+from django.core.exceptions import ValidationError
 from django.db import models
 from django.db.models.signals import post_save
 from django.dispatch import receiver
@@ -10,7 +13,32 @@ from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 from markdownfield.models import MarkdownField, RenderedMarkdownField
 from markdownfield.validators import VALIDATOR_STANDARD
-from django.contrib.sites.models import Site
+
+
+class PhoneNumberField(models.CharField):
+    def __init__(self, *args, **kwargs) -> None:
+        kwargs['max_length'] = 32  # Adjust as necessary
+        super().__init__(*args, **kwargs)
+
+    def clean(self, value: str | None, model_instance: Any) -> str | None:
+        if value is None:
+            return None
+        value = super().clean(value, model_instance).strip()
+        return self.validate_phone_number(value)
+
+    @staticmethod
+    def validate_phone_number(phone_number: str) -> str:
+        if not phone_number.startswith('+'):
+            raise ValidationError("Phone number must start with a '+'")
+
+        # Remove spaces, dashes, and parentheses
+        sanitized_number = re.sub(r'[ ()-]', '', phone_number).strip()
+
+        # Check if sanitized number consists only of digits after '+'
+        if not sanitized_number[1:].isdigit():
+            raise ValidationError("Invalid phone number format")
+
+        return sanitized_number
 
 
 class StrippedCharField(models.CharField):
@@ -28,7 +56,7 @@ class LowerCharField(StrippedCharField):
 class Person(AbstractUser):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4)
     password = models.CharField(_('password'), max_length=128, blank=True, null=True)
-    phone_number = models.CharField(null=True, blank=True, db_index=True, max_length=128)
+    phone_number = PhoneNumberField(null=True, blank=True, db_index=True)
     from_abroad = models.BooleanField(default=False, db_index=True)
     in_broadcast = models.BooleanField(default=True, db_index=True)
     allergies = models.ManyToManyField('Ingredient', blank=True, through='Allergy')
@@ -95,6 +123,19 @@ class Person(AbstractUser):
 
     def is_invited_to(self, party: 'Party') -> bool:
         return party.invite_set.filter(person=self).exists()
+
+
+class Preferences(models.Model):
+    person = models.OneToOneField(Person, on_delete=models.CASCADE)
+    whatsapp_notifications = models.BooleanField(default=True, db_index=True)
+    email_notifications = models.BooleanField(default=False, db_index=True)
+
+    class Meta:
+        verbose_name_plural = 'preferences'
+        ordering = ['person__first_name', 'person__last_name']
+
+    def __str__(self) -> str:
+        return f"{self.person}'s preferences"
 
 
 class Party(models.Model):
@@ -419,10 +460,16 @@ class PartyFile(models.Model):
 
 
 @receiver(post_save, sender=Party)
-def create_invite(sender, instance, created, **kwargs):
+def create_invite(sender, instance: Party, created: bool, **kwargs):
     if created and not instance.private:
         for person in Person.objects.all():
             Invite.objects.create(person=person, party=instance, status=None)
+
+
+@receiver(post_save, sender=Person)
+def create_preferences(sender, instance: Person, created: bool, **kwargs):
+    if created:
+        Preferences.objects.create(person=instance)
 
 
 def generate_short_url() -> str:

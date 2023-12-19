@@ -32,7 +32,11 @@ Here's your *personal* link to manage your invitation:
 
 {url}
 
-Don't share this link with anyone else, it's only yours!"""
+Don't share this link with anyone else, it's only yours!
+
+(Send "stop" to unsubscribe)
+"""
+
 }
 
 message_statuses = ["accepted", "scheduled", "canceled", "queued", "sending",
@@ -46,12 +50,13 @@ def send_whatsapp_message(to: str, body: str) -> MessageInstance | None:
     auth_token = settings.TWILIO_AUTH_TOKEN
     from_whatsapp_number = settings.TWILIO_FROM_WHATSAPP_NUMBER
     client = TwilioClient(account_sid, auth_token)
-    callback_url = reverse('slr-api:twilio_status_callback')
+    callback_path = reverse('slr-api:twilio_status_callback')
+    callback_url = (settings.NGROK_URL or f"https://{Site.objects.get_current().domain}") + callback_path
     message = client.messages.create(
         body=body,
         from_=f"whatsapp:{from_whatsapp_number}",
         to=f"whatsapp:{to}",
-        status_callback="http://5179-2001-871-25c-ec13-b10f-47bd-fe9d-12cf.ngrok-free.app" + callback_url,
+        status_callback=callback_url,
     )
     return message
 
@@ -63,6 +68,9 @@ def send_invitation_messages(party: models.Party, dry: bool = True, wait: bool =
     sent = []
     for invite in invites:
         person = invite.person
+        if not person.preferences.whatsapp_notifications:
+            logger.info(f"Skipping {person}: No WhatsApp notifications")
+            continue
         if (pls := models.PersonalLinkSent.objects.filter(party=party, person=person, sent=True).first()) and not force:
             sent.append(pls)
             logger.info(f"Skipping {person}: Already sent (status: {pls.status})")
@@ -94,7 +102,7 @@ def send_invitation_messages(party: models.Party, dry: bool = True, wait: bool =
         pls = models.PersonalLinkSent.objects.create(party=party, person=person, sent=True, sid=message.sid)
         sent.append(pls)
         logger.info(log_msg)
-    if wait:
+    if wait and sent:
         print("Refreshing statuses...")
         time.sleep(refresh)
         for pls in sent:
