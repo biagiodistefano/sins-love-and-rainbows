@@ -1,6 +1,5 @@
 from django.apps import AppConfig
 from . import settings
-from . import messages
 
 
 class ApiConfig(AppConfig):
@@ -8,6 +7,7 @@ class ApiConfig(AppConfig):
     name = 'api'
 
     def ready(self):
+        from . import messages
         to = settings.MY_PHONE_NUMBER
         if to is None or settings.DEBUG:
             return
