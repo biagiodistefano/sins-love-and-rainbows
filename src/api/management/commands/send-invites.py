@@ -2,9 +2,8 @@ import typing as t
 from argparse import ArgumentParser
 
 from django.core.management.base import BaseCommand
-from django.conf import settings
 
-from api import messages
+from api import messages, settings
 from api.models import Party
 
 

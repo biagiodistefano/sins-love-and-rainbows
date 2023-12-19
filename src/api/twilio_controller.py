@@ -4,9 +4,8 @@ from django.http import HttpRequest, HttpResponse
 from django.shortcuts import get_object_or_404
 from ninja_extra import api_controller, route
 
-from . import models
+from . import messages, models
 from .auth import TwilioAuth
-from . import messages
 
 logger = logging.getLogger("twilio_whatsapp")
 

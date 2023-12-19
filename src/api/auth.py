@@ -1,13 +1,14 @@
+from django.conf import settings
 from django.http import HttpRequest
 from ninja.constants import NOT_SET
 from ninja.security import APIKeyHeader  # , django_auth
-# from ninja_jwt.authentication import JWTAuth
+from twilio.request_validator import RequestValidator
 
 from api.models import ApiClient
 from .settings import USE_AUTH
-from django.conf import settings
-from twilio.request_validator import RequestValidator
 
+
+# from ninja_jwt.authentication import JWTAuth
 
 
 class ApiKey(APIKeyHeader):

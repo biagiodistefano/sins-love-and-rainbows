@@ -1,14 +1,13 @@
 import logging
 import time
 
-from django.conf import settings
 from django.contrib.sites.models import Site
 from django.db.models import Q
 from django.shortcuts import reverse
 from twilio.rest import Client as TwilioClient
 from twilio.rest.api.v2010.account.message import MessageInstance
 
-from . import models
+from . import models, settings
 
 logger = logging.getLogger("twilio_whatsapp")
 
@@ -39,8 +38,9 @@ Don't share this link with anyone else, it's only yours!
 
 }
 
-message_statuses = ["accepted", "scheduled", "canceled", "queued", "sending",
-                    "sent", "failed", "delivered", "undelivered", "receiving", "received", "read"]
+
+# message_statuses = ["accepted", "scheduled", "canceled", "queued", "sending",
+# "sent", "failed", "delivered", "undelivered", "receiving", "received", "read"]
 
 
 def send_whatsapp_message(to: str, body: str) -> MessageInstance | None:
@@ -61,7 +61,9 @@ def send_whatsapp_message(to: str, body: str) -> MessageInstance | None:
     return message
 
 
-def send_invitation_messages(party: models.Party, dry: bool = True, wait: bool = False, refresh: float = 5.0, force: bool = False) -> None:
+def send_invitation_messages(
+    party: models.Party, dry: bool = True, wait: bool = False, refresh: float = 5.0, force: bool = False
+) -> None:
     site = Site.objects.get_current()
     party_url = f"https://{site.domain}" + reverse('party', kwargs={"edition": party.edition})
     invites = party.invite_set.filter(Q(status__in=["Y", "M"]) | Q(status__isnull=True)).prefetch_related('person')

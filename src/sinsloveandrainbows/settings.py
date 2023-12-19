@@ -251,3 +251,4 @@ CELERY_TIMEZONE = TIME_ZONE
 CELERY_TASK_ALWAYS_EAGER = config("CELERY_TASK_ALWAYS_EAGER", cast=bool, default=False)
 
 NGROK_URL = config("NGROK_URL", default=None)
+MY_PHONE_NUMBER = config("MY_PHONE_NUMBER", default=None)

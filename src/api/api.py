@@ -5,7 +5,6 @@ from .shorturl_controller import ShortURLController
 from .slr_controller import SLRController
 from .twilio_controller import TwilioController
 
-
 API_VERSION = "v0.0.2"
 
 api = NinjaExtraAPI(
