@@ -2,6 +2,7 @@ import typing as t
 from argparse import ArgumentParser
 
 from django.core.management.base import BaseCommand
+from django.conf import settings
 
 from api import messages
 from api.models import Party
@@ -23,6 +24,10 @@ class Command(BaseCommand):
         else:
             party = Party.get_next()
         dry = not options["no_dry"]
+        if not settings.DEBUG and not dry:
+            a = input("Are you sure you want to send messages? [y/N] ")
+            if a.lower() != "y":
+                return
         messages.send_invitation_messages(
             party, dry=dry, wait=options["wait"], refresh=options["refresh"], force=options["force"]
         )
