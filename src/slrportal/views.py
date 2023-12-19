@@ -270,12 +270,8 @@ class DeleteProfileView(View):
 
     def post(self, request):
         user = request.user
-        try:
-            person = Person.objects.get(user=user)
-            person.delete()
-            return redirect('home')
-        except Person.DoesNotExist:
-            return redirect('profile')
+        user.delete()
+        return redirect('home')
 
 # Add to urls.py
 # path('delete-profile/', views.DeleteProfileView.as_view(), name='delete_profile'),
