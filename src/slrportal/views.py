@@ -12,9 +12,12 @@ from django.http.request import HttpRequest
 from django.shortcuts import get_object_or_404, redirect, render, reverse
 from django.template import loader
 from django.utils import timezone
+from django.utils.decorators import method_decorator
+from django.views import View
 from django.views.decorators.http import require_POST
 
 from api import models
+from api.models import Person
 from . import notifications
 from .forms import ItemForm, RsvpForm
 
@@ -258,3 +261,21 @@ def custom_404(request, exception: Exception) -> HttpResponseNotFound:
         # You can add more context variables here if needed
     }
     return HttpResponseNotFound(template.render(context, request))
+
+
+@method_decorator(login_required, name='dispatch')
+class DeleteProfileView(View):
+    def get(self, request):
+        return render(request, 'slrportal/confirm_delete_profile.html')
+
+    def post(self, request):
+        user = request.user
+        try:
+            person = Person.objects.get(user=user)
+            person.delete()
+            return redirect('home')
+        except Person.DoesNotExist:
+            return redirect('profile')
+
+# Add to urls.py
+# path('delete-profile/', views.DeleteProfileView.as_view(), name='delete_profile'),

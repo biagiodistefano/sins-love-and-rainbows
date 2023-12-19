@@ -1,42 +1,53 @@
 {% extends 'base.html' %}
 
 {% block content %}
-<div class="container mx-auto p-4">
-    <h1 class="text-xl font-bold mb-4">Allergies and Intolerances</h1>
+    <div class="container mx-auto p-4">
+        <h1 class="text-xl font-bold mb-4">Allergies and Intolerances</h1>
 
-    <!-- Display existing allergies/intolerances -->
-    <div class="mb-4">
-        <h2 class="text-lg font-semibold mb-2">Your Allergies/Intolerances:</h2>
-        <div class="flex flex-wrap gap-2">
-            {% for allergy in person.allergies.all %}
-                <div class="bg-red-100 text-red-800 text-sm font-semibold mr-2 px-2.5 py-0.5 rounded flex align-center">
-                    {{ allergy.name }}
-                    <form action="{% url 'delete_allergy' allergy.id %}" method="post" class="ml-2">
-                        {% csrf_token %}
-                        <button type="submit" class="text-red-800 hover:text-red-600">&times;</button>
-                    </form>
-                </div>
-            {% empty %}
-                <p>You have no allergies listed.</p>
-            {% endfor %}
+        <!-- Display existing allergies/intolerances -->
+        <div class="mb-4">
+            <h2 class="text-lg font-semibold mb-2">Your Allergies/Intolerances:</h2>
+            <div class="flex flex-wrap gap-2">
+                {% for allergy in person.allergies.all %}
+                    <div class="bg-red-100 text-red-800 text-sm font-semibold mr-2 px-2.5 py-0.5 rounded flex align-center">
+                        {{ allergy.name }}
+                        <form action="{% url 'delete_allergy' allergy.id %}" method="post" class="ml-2">
+                            {% csrf_token %}
+                            <button type="submit" class="text-red-800 hover:text-red-600">&times;</button>
+                        </form>
+                    </div>
+                {% empty %}
+                    <p>You have no allergies listed.</p>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Add Allergy Form -->
+        <form action="{% url 'add_allergy' %}" method="post">
+            {% csrf_token %}
+            <div class="mb-4">
+                <label for="allergy" class="block text-sm font-medium text-gray-700">Add New Allergy/Intolerance</label>
+                <input list="ingredients" id="allergy" name="allergy" placeholder="Start typing..."
+                       class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md"
+                       autocomplete="off">
+                <datalist id="ingredients">
+                    {% for ingredient in ingredients %}
+                        <option value="{{ ingredient }}">
+                    {% endfor %}
+                </datalist>
+            </div>
+            <button type="submit"
+                    class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                Add Allergy
+            </button>
+        </form>
+
+        <!-- Delete Profile -->
+        <div class="mt-4">
+            <a href="{% url 'delete_profile' %}"
+               class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500">
+                Delete Profile
+            </a>
         </div>
     </div>
-
-    <!-- Add Allergy Form -->
-    <form action="{% url 'add_allergy' %}" method="post">
-        {% csrf_token %}
-        <div class="mb-4">
-            <label for="allergy" class="block text-sm font-medium text-gray-700">Add New Allergy/Intolerance</label>
-            <input list="ingredients" id="allergy" name="allergy" placeholder="Start typing..." class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md" autocomplete="off">
-            <datalist id="ingredients">
-                {% for ingredient in ingredients %}
-                    <option value="{{ ingredient }}">
-                {% endfor %}
-            </datalist>
-        </div>
-        <button type="submit" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
-            Add Allergy
-        </button>
-    </form>
-</div>
 {% endblock %}

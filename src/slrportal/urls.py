@@ -18,4 +18,5 @@ urlpatterns = [
     path('party/<str:edition>/rsvp', views.update_rsvp, name='update_rsvp'),
     path('add-allergy', views.add_allergy, name='add_allergy'),
     path('delete-allergy/<int:allergy_id>', views.delete_allergy, name='delete_allergy'),
+    path('delete-profile/', views.DeleteProfileView.as_view(), name='delete_profile'),
 ]
