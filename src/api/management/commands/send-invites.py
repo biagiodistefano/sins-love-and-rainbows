@@ -3,9 +3,8 @@ from argparse import ArgumentParser
 
 from django.core.management.base import BaseCommand
 
-
-from api.models import Party
 from api import messages
+from api.models import Party
 
 
 class Command(BaseCommand):
@@ -14,8 +13,16 @@ class Command(BaseCommand):
     def add_arguments(self, parser: ArgumentParser) -> None:
         parser.add_argument("--no-dry", action="store_true", help="Actually send the messages", default=False)
         parser.add_argument("--wait", action="store_true", help="Wait between messages", default=False)
+        parser.add_argument("--force", action="store_true", help="Force sending messages", default=False)
+        parser.add_argument("--refresh", type=float, help="Refresh rate", default=5.0)
+        parser.add_argument("--party", type=int, help="Party ID", default=None)
 
     def handle(self, *args: t.Any, **options: t.Any) -> None:
-        party = Party.get_next()
+        if options["party"] is not None:
+            party = Party.objects.get(id=options["party"], closed=False)
+        else:
+            party = Party.get_next()
         dry = not options["no_dry"]
-        messages.send_invitation_messages(party, dry=dry, wait=options["wait"])
+        messages.send_invitation_messages(
+            party, dry=dry, wait=options["wait"], refresh=options["refresh"], force=options["force"]
+        )

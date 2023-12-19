@@ -56,48 +56,47 @@ def send_whatsapp_message(to: str, body: str) -> MessageInstance | None:
     return message
 
 
-def send_invitation_messages(party: models.Party, dry: bool = True, wait: bool = False, timeout: float = 5.0) -> None:
+def send_invitation_messages(party: models.Party, dry: bool = True, wait: bool = False, refresh: float = 5.0, force: bool = False) -> None:
     site = Site.objects.get_current()
     party_url = f"https://{site.domain}" + reverse('party', kwargs={"edition": party.edition})
     invites = party.invite_set.filter(Q(status__in=["Y", "M"]) | Q(status__isnull=True)).prefetch_related('person')
     sent = []
     for invite in invites:
         person = invite.person
-        if pls := models.PersonalLinkSent.objects.filter(party=party, person=person, sent=True).first():
+        if (pls := models.PersonalLinkSent.objects.filter(party=party, person=person, sent=True).first()) and not force:
             sent.append(pls)
             logger.info(f"Skipping {person}: Already sent (status: {pls.status})")
             continue
+        personal_url = f"{party_url}?visitor_id={str(person.pk)}"
+        phone_number = person.clean_phone_number
+        if not phone_number:
+            continue
+        if not phone_number.startswith("+"):
+            phone_number = f"+{phone_number}"
+        log_msg = f"{party}: Sending personal link to {person} ({phone_number})"
+        if dry:
+            print(f"[DRY] {log_msg}")
+            continue
         try:
-            personal_url = f"{party_url}?visitor_id={str(person.pk)}"
-            phone_number = person.clean_phone_number
-            if not phone_number:
-                continue
-            if not phone_number.startswith("+"):
-                phone_number = f"+{phone_number}"
-            log_msg = f"{party}: Sending personal link to {person} ({phone_number})"
-            if dry:
-                log_msg = f"[DRY] {log_msg}"
-                print(log_msg)
-            message: MessageInstance | None = None
-            if not dry:
-                message = send_whatsapp_message(
-                    to=phone_number, body=TEMPLATES["slr_invitation_2"].format(
-                        name=person.first_name, party=str(party), url=personal_url
-                    )
+            message = send_whatsapp_message(
+                to=phone_number, body=TEMPLATES["slr_invitation_2"].format(
+                    name=person.first_name, party=str(party), url=personal_url
                 )
-            if not message:
-                continue
-            pls = models.PersonalLinkSent.objects.create(party=party, person=person, sent=True, sid=message.sid)
-            sent.append(pls)
-            logger.info(log_msg)
+            )
         except Exception as e:
             logger.error(f"Error sending message to {person}: {e}")
             models.PersonalLinkSent.objects.create(
                 party=party, person=person, error=True, error_message=str(e)
             )
+            continue
+        if not message:
+            continue
+        pls = models.PersonalLinkSent.objects.create(party=party, person=person, sent=True, sid=message.sid)
+        sent.append(pls)
+        logger.info(log_msg)
     if wait:
         print("Refreshing statuses...")
-        time.sleep(timeout)
+        time.sleep(refresh)
         for pls in sent:
             pls.refresh_from_db()
             logger.info(f"{pls.person}: {pls.status}")
