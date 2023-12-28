@@ -66,7 +66,10 @@ def send_invitation_messages(
 ) -> None:
     site = Site.objects.get_current()
     party_url = f"https://{site.domain}" + reverse('party', kwargs={"edition": party.edition})
-    invites = party.invite_set.filter(Q(status__in=["Y", "M"]) | Q(status__isnull=True)).prefetch_related('person')
+    invites = party.invite_set.filter(
+        (Q(status__in=["Y", "M"]) | Q(status__isnull=True)) &
+        Q(person__preferences__whatsapp_notifications=True)
+    ).prefetch_related('person')
     sent = []
     for invite in invites:
         person = invite.person

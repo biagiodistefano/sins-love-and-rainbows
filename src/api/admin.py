@@ -56,6 +56,10 @@ class PartyAdmin(admin.ModelAdmin):
 
     list_display = ('name', 'date_and_time', 'yes_count', 'no_count', 'maybe_count', 'party_url')
 
+    @admin.display(description='Total invites')
+    def total_invites(self, obj: Party) -> int:
+        return obj.invite_set.count()
+
     @admin.display(description='Yes')
     def yes_count(self, obj: Party) -> int:
         return obj.yes_count()
@@ -83,7 +87,7 @@ class PartyAdmin(admin.ModelAdmin):
             'name', "edition", "date_and_time", "location", "max_people", "closed", "private", "description"),
         }),
         ('Response Counts', {
-            'fields': ('yes_count', 'no_count', 'maybe_count'),
+            'fields': ('total_invites', 'yes_count', 'no_count', 'maybe_count'),
             # 'classes': ('collapse',),
         }),
         ('Allergies', {
@@ -92,7 +96,7 @@ class PartyAdmin(admin.ModelAdmin):
         }),
     )
 
-    readonly_fields = ('yes_count', 'no_count', 'maybe_count', 'allergies_list')
+    readonly_fields = ('total_invites', 'yes_count', 'no_count', 'maybe_count', 'allergies_list')
 
 
 post_models = apps.get_app_config("api").get_models()
