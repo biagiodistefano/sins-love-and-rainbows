@@ -392,6 +392,9 @@ class PersonalLinkSent(models.Model):
             ("person", "party", "sent"),
         ]
 
+    def __str__(self) -> str:
+        return f"{self.person} -> {self.party} ({self.status})"
+
 
 class ExternalLink(models.Model):
     parties = models.ManyToManyField(Party, blank=True)
