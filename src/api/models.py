@@ -13,6 +13,8 @@ from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 from markdownfield.models import MarkdownField, RenderedMarkdownField
 from markdownfield.validators import VALIDATOR_STANDARD
+from .messages import TEMPLATES
+from dateutil.relativedelta import relativedelta
 
 
 class PhoneNumberField(models.CharField):
@@ -333,7 +335,7 @@ class Message(models.Model):
     draft = models.BooleanField(default=True, db_index=True)
 
     class Meta:
-        ordering = ['-due_at']
+        ordering = ['-party__date_and_time', '-due_at']
         index_together = [
             ("party", "due_at", "draft")
         ]
@@ -450,6 +452,27 @@ def create_invite(sender, instance: Party, created: bool, **kwargs):
     if created and not instance.private:
         for person in Person.objects.all():
             Invite.objects.create(person=person, party=instance, status=None)
+
+
+@receiver(post_save, sender=Party)
+def create_party_default_messages(sender, instance: Party, created: bool, **kwargs):
+    if not created:
+        return
+    Message.objects.create(
+        party=instance,
+        title="Invitation",
+        text=TEMPLATES["slr_invitation"],
+        due_at=instance.date_and_time - relativedelta(month=1, hour=1),
+        draft=False,
+    )
+    for w in range(1, 3):
+        Message.objects.create(
+            party=instance,
+            title=f"{w}-week reminder",
+            text=TEMPLATES["slr_reminder"],
+            due_at=instance.date_and_time - relativedelta(weeks=w, hour=1),
+            draft=False,
+        )
 
 
 @receiver(post_save, sender=Person)

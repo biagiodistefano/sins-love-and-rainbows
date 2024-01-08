@@ -10,18 +10,7 @@ from . import settings
 logger = logging.getLogger("twilio_whatsapp")
 
 TEMPLATES = {
-    "slr_personal_link": """Your personal link to access our upcoming party is {url}
-
-Do not share it with anyone else, it belongs to you!""",
-
     "slr_invitation": """Hi, {name}!
-
-This is your personal link for our upcoming Party!
-
-{url}
-
-Don't share this link with anyone else, it's only yours!""",
-    "slr_invitation_2": """Hi, {name}!
 
 You are invited to *{party}*!
 
@@ -32,8 +21,18 @@ Here's your *personal* link to manage your invitation:
 Don't share this link with anyone else, it's only yours!
 
 (Send "stop" to unsubscribe)
-"""
+""",
+    "slr_reminder": """Hi, {name}!
 
+This is just to remind you that are invited to *{party}*!
+
+Here's your *personal* link to manage your invitation:
+
+{url}
+
+Don't share this link with anyone else, it's only yours!
+
+(Send "stop" to unsubscribe)"""
 }
 
 
