@@ -28,4 +28,6 @@ jobs:
           python manage.py migrate
           python manage.py collectstatic --noinput
           sudo systemctl restart sinsloveandrainbows
+          sudo systemctl restart celery-slr
+          sudo systemctl restart celery-slr-beat
           echo "Successful deployment $(date)" >> deployments.info

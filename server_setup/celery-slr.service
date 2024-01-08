@@ -1,0 +1,12 @@
+# /etc/systemd/system/celery-slr.service
+
+[Unit]
+Description=slr celery daemon
+
+[Service]
+User=biagio
+WorkingDirectory=/home/biagio/sins-love-and-rainbows/src
+ExecStart=/home/biagio/sins-love-and-rainbows/.venv/bin/celery -A sinsloveandrainbows worker -l INFO
+
+[Install]
+WantedBy=multi-user.target
