@@ -5,7 +5,7 @@ from django.contrib import admin
 from django.urls import reverse
 from django.utils.html import format_html
 
-from .models import Allergy, Invite, Item, Party, PartyFile, Person, Message
+from .models import Allergy, Invite, Item, Party, PartyFile, Person, Message, MessageSent
 
 
 # from django import forms
@@ -63,6 +63,11 @@ class InviteAdmin(admin.ModelAdmin):
 @admin.register(Item)
 class ItemAdmin(admin.ModelAdmin):
     list_filter = ('party', 'category', )
+
+
+@admin.register(MessageSent)
+class MessageSentAdmin(admin.ModelAdmin):
+    list_filter = ('party', 'message', 'sent', 'error', 'status', 'person', )
 
 
 @admin.register(Party)
