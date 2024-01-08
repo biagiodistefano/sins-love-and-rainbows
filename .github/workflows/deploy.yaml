@@ -29,5 +29,5 @@ jobs:
           python manage.py collectstatic --noinput
           sudo systemctl restart sinsloveandrainbows
           sudo systemctl restart celery-slr
-          sudo systemctl restart celery-slr-beat
+          sudo systemctl restart celery-beat-slr
           echo "Successful deployment $(date)" >> deployments.info
