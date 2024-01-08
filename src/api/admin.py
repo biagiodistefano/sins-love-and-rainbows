@@ -5,7 +5,7 @@ from django.contrib import admin
 from django.urls import reverse
 from django.utils.html import format_html
 
-from .models import Allergy, Invite, Item, Party, PartyFile, Person
+from .models import Allergy, Invite, Item, Party, PartyFile, Person, Message
 
 
 # from django import forms
@@ -48,6 +48,21 @@ class ItemInline(admin.TabularInline):
     model = Item
     classes = ['collapse']
     fields = ('category', 'name', 'quantity', 'description', 'ingredients', 'assigned_to')
+
+
+@admin.register(Message)
+class MessageAdmin(admin.ModelAdmin):
+    list_filter = ('party',)
+
+
+@admin.register(Invite)
+class InviteAdmin(admin.ModelAdmin):
+    list_filter = ('party', 'status',)
+
+
+@admin.register(Item)
+class ItemAdmin(admin.ModelAdmin):
+    list_filter = ('party', 'category', )
 
 
 @admin.register(Party)
