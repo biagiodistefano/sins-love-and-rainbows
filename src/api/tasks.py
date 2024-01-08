@@ -9,6 +9,7 @@ from django.utils import timezone
 
 from . import models
 from .messages import send_whatsapp_message
+from .unrelated import send_prescription_email  # noqa: F401
 
 logger = logging.getLogger("twilio_whatsapp")
 
