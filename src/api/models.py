@@ -76,13 +76,7 @@ class Person(AbstractUser):
         link = f"https://sinsloveandrainbows.eu/party/{party.edition}?visitor_id={str(self.id)}"
         msg = self.msg_template.format(link=link)
         urlencoded_msg = urllib.parse.quote(msg)
-        return f"https://wa.me/{self.clean_phone_number}?text={urlencoded_msg}"
-
-    @property
-    def clean_phone_number(self) -> str | None:
-        if not self.phone_number:
-            return None
-        return self.phone_number.replace("+", "").replace(" ", "")
+        return f"https://wa.me/{self.phone_number[1:]}?text={urlencoded_msg}"
 
     def __str__(self):
         return self.get_full_name()
@@ -335,6 +329,14 @@ class Message(models.Model):
     title = models.CharField(max_length=30, db_index=True, null=True, blank=True)
     text = MarkdownField(rendered_field='text_rendered', validator=VALIDATOR_STANDARD)
     text_rendered = RenderedMarkdownField()
+    due_at = models.DateTimeField(db_index=True, null=True, blank=True)
+    draft = models.BooleanField(default=True, db_index=True)
+
+    class Meta:
+        ordering = ['-due_at']
+        index_together = [
+            ("party", "due_at", "draft")
+        ]
 
     @property
     def party_edition(self) -> str:
@@ -348,30 +350,8 @@ class Message(models.Model):
         return f"{title} @ {self.party}"
 
 
-class MessageLog(models.Model):
+class MessageSent(models.Model):
     message = models.ForeignKey(Message, on_delete=models.CASCADE)
-    person = models.ForeignKey(Person, on_delete=models.CASCADE)
-    sent_at = models.DateTimeField(auto_now_add=True, db_index=True)
-    sent = models.BooleanField(default=False, db_index=True)
-    sent_via = models.CharField(
-        max_length=30, db_index=True, choices=(
-            ('W', 'WhatsApp'), ('S', 'SMS'), ("E", "Email"), ("T", "Telegram")
-        ), null=True, blank=True
-    )
-    sid = models.CharField(max_length=34, null=True, blank=True)
-    error = models.BooleanField(default=False, db_index=True)
-    error_message = models.TextField(null=True, blank=True)
-
-    def __str__(self):
-        if self.sent:
-            return f"{self.person} -> sent at {self.sent_at} (via {self.get_sent_via_display()})"
-        return f"{self.person} -> not sent"
-
-    class Meta:
-        verbose_name_plural = 'message logs'
-
-
-class PersonalLinkSent(models.Model):
     person = models.ForeignKey(Person, on_delete=models.CASCADE)
     party = models.ForeignKey(Party, on_delete=models.CASCADE)
     sent = models.BooleanField(default=False, db_index=True)
@@ -387,13 +367,16 @@ class PersonalLinkSent(models.Model):
     error_message = models.TextField(null=True, blank=True)
 
     class Meta:
-        verbose_name_plural = 'Personal Links Sent'
+        verbose_name_plural = 'Messages Sent'
         index_together = [
-            ("person", "party", "sent"),
+            ("message", "person", "party", "sent"),
+        ]
+        unique_together = [
+            ("message", "person", "party", "sent_via"),
         ]
 
     def __str__(self) -> str:
-        return f"{self.person} -> {self.party} ({self.status})"
+        return f"[{self.party}] {self.message.title} -> {self.person} ({self.status})"
 
 
 class ExternalLink(models.Model):

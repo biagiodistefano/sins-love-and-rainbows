@@ -20,7 +20,7 @@ class TwilioController:  # type: ignore
         message_sid = request.POST.get('MessageSid', '')
         message_status = request.POST.get('MessageStatus', '')
         message_error = request.POST.get('ErrorCode', '')
-        message = get_object_or_404(models.PersonalLinkSent, sid=message_sid)
+        message = get_object_or_404(models.MessageSent, sid=message_sid)
         message.status = message_status
         message.error = bool(message_error)
         if message.error:
@@ -56,6 +56,6 @@ class TwilioController:  # type: ignore
             return HttpResponse("OK", status=200)
         else:
             messages.send_whatsapp_message(
-                to=clean_number, body="Sorry, we don't understand that command. Send STOP to unsubscribe."
+                to=clean_number, body="Sorry, I don't understand that command. Send STOP to unsubscribe."
             )
             return HttpResponse("OK", status=200)

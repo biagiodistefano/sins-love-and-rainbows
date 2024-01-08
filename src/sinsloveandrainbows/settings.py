@@ -51,6 +51,7 @@ INSTALLED_APPS = [
     'ninja_extra',
     'ninja_jwt',
     'markdownfield',
+    'django_celery_beat',
 
     # custom
     'api',
@@ -100,7 +101,7 @@ CORS_ALLOW_ALL_ORIGINS = True
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / f'{CURRENT_BRANCH}.sqlite3',
+        'NAME': BASE_DIR / f'{CURRENT_BRANCH.replace("/", "-")}.sqlite3',
     }
 }
 

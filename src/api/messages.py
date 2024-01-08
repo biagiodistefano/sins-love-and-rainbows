@@ -1,13 +1,11 @@
 import logging
-import time
 
 from django.contrib.sites.models import Site
-from django.db.models import Q
 from django.shortcuts import reverse
 from twilio.rest import Client as TwilioClient
 from twilio.rest.api.v2010.account.message import MessageInstance
 
-from . import models, settings
+from . import settings
 
 logger = logging.getLogger("twilio_whatsapp")
 
@@ -59,57 +57,3 @@ def send_whatsapp_message(to: str, body: str) -> MessageInstance | None:
         status_callback=callback_url,
     )
     return message
-
-
-def send_invitation_messages(
-    party: models.Party, dry: bool = True, wait: bool = False, refresh: float = 5.0, force: bool = False
-) -> None:
-    site = Site.objects.get_current()
-    party_url = f"https://{site.domain}" + reverse('party', kwargs={"edition": party.edition})
-    invites = party.invite_set.filter(
-        (Q(status__in=["Y", "M"]) | Q(status__isnull=True)) &
-        Q(person__preferences__whatsapp_notifications=True)
-    ).prefetch_related('person')
-    sent = []
-    for invite in invites:
-        person = invite.person
-        if not person.preferences.whatsapp_notifications:
-            logger.info(f"Skipping {person}: No WhatsApp notifications")
-            continue
-        if (pls := models.PersonalLinkSent.objects.filter(party=party, person=person, sent=True).first()) and not force:
-            sent.append(pls)
-            logger.info(f"Skipping {person}: Already sent (status: {pls.status})")
-            continue
-        personal_url = f"{party_url}?visitor_id={str(person.pk)}"
-        phone_number = person.clean_phone_number
-        if not phone_number:
-            continue
-        if not phone_number.startswith("+"):
-            phone_number = f"+{phone_number}"
-        log_msg = f"{party}: Sending personal link to {person} ({phone_number})"
-        if dry:
-            print(f"[DRY] {log_msg}")
-            continue
-        try:
-            message = send_whatsapp_message(
-                to=phone_number, body=TEMPLATES["slr_invitation_2"].format(
-                    name=person.first_name, party=str(party), url=personal_url
-                )
-            )
-        except Exception as e:
-            logger.error(f"Error sending message to {person}: {e}")
-            models.PersonalLinkSent.objects.create(
-                party=party, person=person, error=True, error_message=str(e)
-            )
-            continue
-        if not message:
-            continue
-        pls = models.PersonalLinkSent.objects.create(party=party, person=person, sent=True, sid=message.sid)
-        sent.append(pls)
-        logger.info(log_msg)
-    if wait and sent:
-        print("Refreshing statuses...")
-        time.sleep(refresh)
-        for pls in sent:
-            pls.refresh_from_db()
-            logger.info(f"{pls.person}: {pls.status}")

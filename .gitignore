@@ -135,3 +135,5 @@ dmypy.json
 /src/static
 /src/deployments.info
 /src/media/files
+
+dump.rdb

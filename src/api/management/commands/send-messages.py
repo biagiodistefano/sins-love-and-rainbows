@@ -3,8 +3,9 @@ from argparse import ArgumentParser
 
 from django.core.management.base import BaseCommand
 
-from api import messages, settings
+from api import settings
 from api.models import Party
+from api.tasks import send_due_messages
 
 
 class Command(BaseCommand):
@@ -27,6 +28,6 @@ class Command(BaseCommand):
             a = input("Are you sure you want to send messages? [y/N] ")
             if a.lower() != "y":
                 return
-        messages.send_invitation_messages(
+        send_due_messages(
             party, dry=dry, wait=options["wait"], refresh=options["refresh"], force=options["force"]
         )
