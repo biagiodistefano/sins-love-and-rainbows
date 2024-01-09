@@ -23,7 +23,7 @@ def send_due_messages(
     site = Site.objects.get_current()
     party_url = f"https://{site.domain}" + reverse('party', kwargs={"edition": party.edition})
     sent = []
-    messages = models.Message.objects.filter(party=party, due_at__lte=timezone.now(), draft=False)
+    messages = models.Message.objects.filter(party=party, due_at__lte=timezone.now(), draft=False).order_by("due_at")
     recipents = _get_recipients(party)
     for person in recipents:
         for message in messages:
