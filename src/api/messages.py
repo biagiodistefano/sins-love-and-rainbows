@@ -1,5 +1,6 @@
 import logging
 
+from dateutil.relativedelta import relativedelta
 from django.contrib.sites.models import Site
 from django.shortcuts import reverse
 from twilio.rest import Client as TwilioClient
@@ -10,7 +11,9 @@ from . import settings
 logger = logging.getLogger("twilio_whatsapp")
 
 TEMPLATES = {
-    "slr_invitation": """Hi, {name}!
+    "Invitation": ("""🏳️‍🌈 *INVITATION: {party}* 🏳️‍🌈
+
+Hi, {name}!
 
 You are invited to *{party}*!
 
@@ -20,11 +23,13 @@ Here's your *personal* link to manage your invitation:
 
 Don't share this link with anyone else, it's only yours!
 
-(Send "stop" to unsubscribe)
-""",
-    "slr_reminder": """Hi, {name}!
+(Send "stop" to unsubscribe)""", relativedelta(month=1, hour=1)),
 
-This is just to remind you that are invited to *{party}*!
+    "2-week reminder": ("""🏳️‍🌈 *2-WEEK REMINDER: {party}* 🏳️‍🌈
+
+Hi, {name}!
+
+This is just to remind you that you are invited to *{party}*!
 
 Here's your *personal* link to manage your invitation:
 
@@ -32,7 +37,33 @@ Here's your *personal* link to manage your invitation:
 
 Don't share this link with anyone else, it's only yours!
 
-(Send "stop" to unsubscribe)"""
+(Send "stop" to unsubscribe)""", relativedelta(weeks=2, hour=1)),
+    "1-week reminder": ("""🏳️‍🌈 *1-WEEK REMINDER: {party}* 🏳️‍🌈
+
+Hi, {name}!
+
+This is just to remind you that you are invited to *{party}*!
+
+Here's your *personal* link to manage your invitation:
+
+{url}
+
+Don't share this link with anyone else, it's only yours!
+
+(Send "stop" to unsubscribe)""", relativedelta(weeks=1, hour=1)),
+    "Final reminder": ("""🏳️‍🌈 *FINAL REMINDER: {party}* 🏳️‍🌈
+
+Hi, {name}!
+
+This is just to remind you that you are invited to *{party}*!
+
+Here's your *personal* link to manage your invitation:
+
+{url}
+
+Don't share this link with anyone else, it's only yours!
+
+(Send "stop" to unsubscribe)""", relativedelta(days=2, hour=1)),
 }
 
 

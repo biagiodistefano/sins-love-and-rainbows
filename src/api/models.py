@@ -13,8 +13,8 @@ from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 from markdownfield.models import MarkdownField, RenderedMarkdownField
 from markdownfield.validators import VALIDATOR_STANDARD
+
 from .messages import TEMPLATES
-from dateutil.relativedelta import relativedelta
 
 
 class PhoneNumberField(models.CharField):
@@ -329,7 +329,7 @@ class Allergy(models.Model):
 class Message(models.Model):
     party = models.ForeignKey(Party, on_delete=models.CASCADE)
     title = models.CharField(max_length=30, db_index=True, null=True, blank=True)
-    text = MarkdownField(rendered_field='text_rendered', validator=VALIDATOR_STANDARD)
+    text = MarkdownField(rendered_field='text_rendered', validator=VALIDATOR_STANDARD, default="", blank=True)
     text_rendered = RenderedMarkdownField()
     due_at = models.DateTimeField(db_index=True, null=True, blank=True)
     draft = models.BooleanField(default=True, db_index=True)
@@ -456,23 +456,14 @@ def create_invite(sender, instance: Party, created: bool, **kwargs):
 
 @receiver(post_save, sender=Party)
 def create_party_default_messages(sender, instance: Party, created: bool, **kwargs):
-    if not created:
-        return
-    Message.objects.create(
-        party=instance,
-        title="Invitation",
-        text=TEMPLATES["slr_invitation"],
-        due_at=instance.date_and_time - relativedelta(month=1, hour=1),
-        draft=False,
-    )
-    for w in range(1, 3):
-        Message.objects.create(
-            party=instance,
-            title=f"{w}-week reminder",
-            text=TEMPLATES["slr_reminder"],
-            due_at=instance.date_and_time - relativedelta(weeks=w, hour=1),
-            draft=False,
-        )
+    for title, (message, delta) in TEMPLATES.items():
+        msg_instance, created = Message.objects.get_or_create(party=instance, title=title)
+        if not created:
+            continue
+        msg_instance.text = message
+        msg_instance.due_at = instance.date_and_time - delta
+        msg_instance.draft = False
+        msg_instance.save()
 
 
 @receiver(post_save, sender=Person)
