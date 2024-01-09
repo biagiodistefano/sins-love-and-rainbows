@@ -65,14 +65,14 @@ class InviteAdmin(admin.ModelAdmin):
 
 @admin.register(Item)
 class ItemAdmin(admin.ModelAdmin):
-    list_filter = ('party', 'category', )
+    list_filter = ('party', 'category', 'assigned_to', )
     readonly_fields = ('id',)
 
 
 @admin.register(MessageSent)
 class MessageSentAdmin(admin.ModelAdmin):
     list_filter = ('party', 'message', 'sent', 'error', 'status', 'person', )
-    readonly_fields = ('timestamp',)
+    readonly_fields = ('sent_at',)
 
 
 @admin.register(Party)
