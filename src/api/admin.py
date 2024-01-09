@@ -17,6 +17,7 @@ class AllergyInline(admin.TabularInline):
 
 @admin.register(Person)
 class PersonAdmin(admin.ModelAdmin):
+    readonly_fields = ('id',)
 
     inlines = [AllergyInline]
 
@@ -53,16 +54,19 @@ class ItemInline(admin.TabularInline):
 @admin.register(Message)
 class MessageAdmin(admin.ModelAdmin):
     list_filter = ('party',)
+    readonly_fields = ('id',)
 
 
 @admin.register(Invite)
 class InviteAdmin(admin.ModelAdmin):
     list_filter = ('party', 'status',)
+    readonly_fields = ('id',)
 
 
 @admin.register(Item)
 class ItemAdmin(admin.ModelAdmin):
     list_filter = ('party', 'category', )
+    readonly_fields = ('id',)
 
 
 @admin.register(MessageSent)
@@ -76,6 +80,7 @@ class PartyAdmin(admin.ModelAdmin):
     inlines = [InviteInline, ItemInline, PartyFileInline]
 
     list_display = ('name', 'date_and_time', 'yes_count', 'no_count', 'maybe_count', 'party_url')
+    readonly_fields = ('id', )
 
     @admin.display(description='Total invites')
     def total_invites(self, obj: Party) -> int:
