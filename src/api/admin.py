@@ -68,6 +68,7 @@ class ItemAdmin(admin.ModelAdmin):
 @admin.register(MessageSent)
 class MessageSentAdmin(admin.ModelAdmin):
     list_filter = ('party', 'message', 'sent', 'error', 'status', 'person', )
+    readonly_fields = ('timestamp',)
 
 
 @admin.register(Party)
