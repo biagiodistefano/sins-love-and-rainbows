@@ -1,0 +1,13 @@
+🏳️‍🌈 *FINAL REMINDER: {party}* 🏳️‍🌈
+
+Hi, {name}!
+
+This is just to remind you that you are invited to *{party}*!
+
+Here's your *personal* link to manage your invitation:
+
+{url}
+
+Don't share this link with anyone else, it's only yours!
+
+(Send "stop" to unsubscribe)

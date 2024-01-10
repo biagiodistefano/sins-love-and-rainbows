@@ -332,6 +332,7 @@ class Message(models.Model):
     text = MarkdownField(rendered_field='text_rendered', validator=VALIDATOR_STANDARD, default="", blank=True)
     text_rendered = RenderedMarkdownField()
     due_at = models.DateTimeField(db_index=True, null=True, blank=True)
+    send_threshold = models.DurationField(null=True, blank=True)
     draft = models.BooleanField(default=True, db_index=True)
 
     class Meta:
@@ -456,12 +457,13 @@ def create_invite(sender, instance: Party, created: bool, **kwargs):
 
 @receiver(post_save, sender=Party)
 def create_party_default_messages(sender, instance: Party, created: bool, **kwargs):
-    for title, (message, delta) in TEMPLATES.items():
+    for title, (message, delta, send_threshold) in TEMPLATES.items():
         msg_instance, created = Message.objects.get_or_create(party=instance, title=title)
         if not created:
             continue
         msg_instance.text = message
         msg_instance.due_at = instance.date_and_time - delta
+        msg_instance.send_threshold = send_threshold
         msg_instance.draft = False
         msg_instance.save()
 

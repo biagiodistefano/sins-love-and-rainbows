@@ -3,7 +3,7 @@ import time
 
 from celery import shared_task
 from django.contrib.sites.models import Site
-from django.db.models import Q
+from django.db.models import F, Q
 from django.shortcuts import reverse
 from django.utils import timezone
 
@@ -23,7 +23,11 @@ def send_due_messages(
     site = Site.objects.get_current()
     party_url = f"https://{site.domain}" + reverse('party', kwargs={"edition": party.edition})
     sent = []
-    messages = models.Message.objects.filter(party=party, due_at__lte=timezone.now(), draft=False).order_by("due_at")
+    current_time = timezone.now()
+    messages = models.Message.objects.filter(party=party, due_at__lte=current_time, draft=False).exclude(
+        Q(send_threshold__isnull=False) &
+        Q(due_at__lt=current_time - F('send_threshold'))
+    ).order_by("due_at")
     recipents = _get_recipients(party)
     for person in recipents:
         for message in messages:

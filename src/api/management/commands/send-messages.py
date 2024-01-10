@@ -28,6 +28,7 @@ class Command(BaseCommand):
             a = input("Are you sure you want to send messages? [y/N] ")
             if a.lower() != "y":
                 return
+        print(f"Sending messages for {party} (dry: {dry})")
         send_due_messages(
             party, dry=dry, wait=options["wait"], refresh=options["refresh"], force=options["force"]
         )

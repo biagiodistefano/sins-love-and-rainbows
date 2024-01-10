@@ -1,4 +1,6 @@
 import logging
+from datetime import timedelta
+from pathlib import Path
 
 from dateutil.relativedelta import relativedelta
 from django.contrib.sites.models import Site
@@ -10,65 +12,26 @@ from . import settings
 
 logger = logging.getLogger("twilio_whatsapp")
 
-TEMPLATES = {
-    "Invitation": ("""🏳️‍🌈 *INVITATION: {party}* 🏳️‍🌈
 
-Hi, {name}!
-
-You are invited to *{party}*!
-
-Here's your *personal* link to manage your invitation:
-
-{url}
-
-Don't share this link with anyone else, it's only yours!
-
-(Send "stop" to unsubscribe)""", relativedelta(month=1, hour=1)),
-
-    "2-week reminder": ("""🏳️‍🌈 *2-WEEK REMINDER: {party}* 🏳️‍🌈
-
-Hi, {name}!
-
-This is just to remind you that you are invited to *{party}*!
-
-Here's your *personal* link to manage your invitation:
-
-{url}
-
-Don't share this link with anyone else, it's only yours!
-
-(Send "stop" to unsubscribe)""", relativedelta(weeks=2, hour=1)),
-    "1-week reminder": ("""🏳️‍🌈 *1-WEEK REMINDER: {party}* 🏳️‍🌈
-
-Hi, {name}!
-
-This is just to remind you that you are invited to *{party}*!
-
-Here's your *personal* link to manage your invitation:
-
-{url}
-
-Don't share this link with anyone else, it's only yours!
-
-(Send "stop" to unsubscribe)""", relativedelta(weeks=1, hour=1)),
-    "Final reminder": ("""🏳️‍🌈 *FINAL REMINDER: {party}* 🏳️‍🌈
-
-Hi, {name}!
-
-This is just to remind you that you are invited to *{party}*!
-
-Here's your *personal* link to manage your invitation:
-
-{url}
-
-Don't share this link with anyone else, it's only yours!
-
-(Send "stop" to unsubscribe)""", relativedelta(days=2, hour=1)),
-}
+def load_templates():
+    template_dir = Path(__file__).parent / 'templates' / 'api'
+    templates = {}
+    delta_dict = {
+        "Invitation": (relativedelta(month=1, hour=1), None),
+        "2-week reminder": (relativedelta(weeks=2, hour=1), timedelta(days=1)),
+        "1-week reminder": (relativedelta(weeks=1, hour=1), timedelta(days=1)),
+        "Final reminder": (relativedelta(days=2, hour=1), timedelta(days=1)),
+    }
+    for file_path in template_dir.glob('*.txt'):
+        with file_path.open('r') as file:
+            content = file.read().strip()
+        # Use the file stem (without extension) as the key and content as the value
+        file_stem = file_path.stem
+        templates[file_stem] = (content, *delta_dict.get(file_stem))
+    return templates
 
 
-# message_statuses = ["accepted", "scheduled", "canceled", "queued", "sending",
-# "sent", "failed", "delivered", "undelivered", "receiving", "received", "read"]
+TEMPLATES = load_templates()
 
 
 def send_whatsapp_message(to: str, body: str) -> MessageInstance | None:
