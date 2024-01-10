@@ -59,7 +59,11 @@
                         <div class="flex flex-wrap justify-center max-w-md mx-auto">
                             {% if person.is_staff %}
                                 {% for yes_person in party.yes_people %}
-                                    <span class="bg-green-200 text-green-800 text-xs font-semibold m-1 px-2 py-0.5 rounded dark:bg-green-700 dark:text-green-200">{{ yes_person.person.get_display_name }}</span>
+                                    {% if yes_person.person.get_display_name in party.guest_list.yes %}
+                                        <span class="bg-green-200 text-green-800 text-xs font-semibold m-1 px-2 py-0.5 rounded dark:bg-green-700 dark:text-green-200">{{ yes_person.person.get_display_name }}</span>
+                                    {% else %}
+                                        <span class="bg-green-200 text-green-800 text-xs font-semibold m-1 px-2 py-0.5 rounded dark:bg-orange-700 dark:text-green-200">{{ yes_person.person.get_display_name }}</span>
+                                    {% endif %}
                                 {% empty %}
                                     <p class="text-center">No confirmed guests yet.</p>
                                 {% endfor %}
@@ -80,7 +84,11 @@
                         <div class="flex flex-wrap justify-center max-w-md mx-auto">
                             {% if person.is_staff %}
                                 {% for maybe_person in party.maybe_people %}
-                                    <span class="bg-yellow-200 text-yellow-800 text-xs font-semibold m-1 px-2 py-0.5 rounded dark:bg-yellow-700 dark:text-yellow-200">{{ maybe_person.person.get_display_name }}</span>
+                                    {% if maybe_person.person.get_display_name in party.guest_list.maybe %}
+                                        <span class="bg-yellow-200 text-yellow-800 text-xs font-semibold m-1 px-2 py-0.5 rounded dark:bg-yellow-700 dark:text-yellow-200">{{ maybe_person.person.get_display_name }}</span>
+                                    {% else %}
+                                        <span class="bg-yellow-200 text-yellow-800 text-xs font-semibold m-1 px-2 py-0.5 rounded dark:bg-orange-700 dark:text-yellow-200">{{ maybe_person.person.get_display_name }}</span>
+                                    {% endif %}
                                 {% empty %}
                                     <p class="text-center">No 'maybe' responses yet.</p>
                                 {% endfor %}
