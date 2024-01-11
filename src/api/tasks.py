@@ -18,7 +18,12 @@ logger = logging.getLogger("twilio_whatsapp")
 
 @shared_task
 def send_due_messages(
-    party: models.Party | None = None, dry: bool = True, wait: bool = False, refresh: float = 5.0, force: bool = False
+    party: models.Party | None = None,
+    dry: bool = True,
+    wait: bool = False,
+    refresh: float = 5.0,
+    force: bool = False,
+    filter_recipients: list[models.Person] | None = None,
 ) -> None:
     if party is None:
         party = models.Party.get_next()
@@ -71,11 +76,19 @@ def send_due_messages(
             logger.info(f"{pls.person}: {pls.status}")
 
 
-def _get_recipients(party: models.Party) -> list[models.Person]:
+def _get_recipients(
+    party: models.Party,
+    filter_recipients: list[models.Person] | None = None,
+) -> list[models.Person]:
+    conditions = (
+            (Q(status__in=["Y", "M"]) | Q(status__isnull=True)) &
+            Q(person__preferences__whatsapp_notifications=True) & Q(person__phone_number__isnull=False)
+        )
+    if filter_recipients:
+        conditions &= Q(person__in=filter_recipients)
     return [
         invite.person
         for invite in party.invite_set.filter(
-            (Q(status__in=["Y", "M"]) | Q(status__isnull=True)) &
-            Q(person__preferences__whatsapp_notifications=True) & Q(person__phone_number__isnull=False)
+            conditions
         ).prefetch_related('person')
     ]

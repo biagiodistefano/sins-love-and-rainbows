@@ -9,7 +9,7 @@ from .tasks import send_due_messages
 @receiver(post_save, sender=models.Invite)
 def send_messages_on_invite_create(sender, instance: models.Invite, created: bool, **kwargs):
     if created:
-        send_due_messages.delay(party=instance.party, dry=False)
+        send_due_messages.delay(party=instance.party, dry=False, filter_recipients=[instance.person])
 
 
 @receiver(post_save, sender=models.Party)
