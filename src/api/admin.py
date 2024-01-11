@@ -2,10 +2,14 @@
 
 from django.apps import apps
 from django.contrib import admin
+from django.contrib.admin.options import InlineModelAdmin
+from django.db.models import ForeignKey
+from django.forms import ModelChoiceField
+from django.http import HttpRequest
 from django.urls import reverse
 from django.utils.html import format_html
 
-from .models import Allergy, Invite, Item, Party, PartyFile, Person, Message, MessageSent
+from .models import Allergy, Invite, Item, Message, MessageSent, Party, PartyFile, Person
 
 
 # from django import forms
@@ -41,7 +45,6 @@ class PartyFileInline(admin.TabularInline):
 
 class InviteInline(admin.TabularInline):
     model = Invite
-    # form = InviteForm
     classes = ['collapse']
 
 
@@ -65,13 +68,13 @@ class InviteAdmin(admin.ModelAdmin):
 
 @admin.register(Item)
 class ItemAdmin(admin.ModelAdmin):
-    list_filter = ('party', 'category', 'assigned_to', )
+    list_filter = ('party', 'category', 'assigned_to',)
     readonly_fields = ('id',)
 
 
 @admin.register(MessageSent)
 class MessageSentAdmin(admin.ModelAdmin):
-    list_filter = ('party', 'message', 'sent', 'error', 'status', 'person', )
+    list_filter = ('party', 'message', 'sent', 'error', 'status', 'person',)
     readonly_fields = ('sent_at',)
 
 
@@ -80,7 +83,6 @@ class PartyAdmin(admin.ModelAdmin):
     inlines = [InviteInline, ItemInline, PartyFileInline]
 
     list_display = ('name', 'date_and_time', 'yes_count', 'no_count', 'maybe_count', 'party_url')
-    readonly_fields = ('id', )
 
     @admin.display(description='Total invites')
     def total_invites(self, obj: Party) -> int:
@@ -110,7 +112,7 @@ class PartyAdmin(admin.ModelAdmin):
     fieldsets = (
         (None, {
             'fields': (
-            'name', "edition", "date_and_time", "location", "max_people", "closed", "private", "description"),
+                'name', "edition", "date_and_time", "location", "max_people", "closed", "private", "description"),
         }),
         ('Response Counts', {
             'fields': ('total_invites', 'yes_count', 'no_count', 'maybe_count'),
@@ -122,7 +124,7 @@ class PartyAdmin(admin.ModelAdmin):
         }),
     )
 
-    readonly_fields = ('total_invites', 'yes_count', 'no_count', 'maybe_count', 'allergies_list')
+    readonly_fields = ('id', 'total_invites', 'yes_count', 'no_count', 'maybe_count', 'allergies_list')
 
 
 post_models = apps.get_app_config("api").get_models()

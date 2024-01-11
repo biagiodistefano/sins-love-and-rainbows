@@ -17,7 +17,7 @@ def load_templates():
     template_dir = Path(__file__).parent / 'templates' / 'api'
     templates = {}
     delta_dict = {
-        "Invitation": (relativedelta(month=1, hour=1), None),
+        "Invitation": (relativedelta(months=1, hour=1), None),
         "2-week reminder": (relativedelta(weeks=2, hour=1), timedelta(days=1)),
         "1-week reminder": (relativedelta(weeks=1, hour=1), timedelta(days=1)),
         "Final reminder": (relativedelta(days=2, hour=1), timedelta(days=1)),
