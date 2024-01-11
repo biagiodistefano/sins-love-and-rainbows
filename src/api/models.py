@@ -448,32 +448,6 @@ class PartyFile(models.Model):
         return f"{self.file.name}"
 
 
-@receiver(post_save, sender=Party)
-def create_invite(sender, instance: Party, created: bool, **kwargs):
-    if created and not instance.private:
-        for person in Person.objects.all():
-            Invite.objects.create(person=person, party=instance, status=None)
-
-
-@receiver(post_save, sender=Party)
-def create_party_default_messages(sender, instance: Party, created: bool, **kwargs):
-    for title, (message, delta, send_threshold) in TEMPLATES.items():
-        msg_instance, created = Message.objects.get_or_create(party=instance, title=title)
-        if not created:
-            continue
-        msg_instance.text = message
-        msg_instance.due_at = instance.date_and_time - delta
-        msg_instance.send_threshold = send_threshold
-        msg_instance.draft = False
-        msg_instance.save()
-
-
-@receiver(post_save, sender=Person)
-def create_preferences(sender, instance: Person, created: bool, **kwargs):
-    if created:
-        Preferences.objects.create(person=instance)
-
-
 def generate_short_url() -> str:
     return str(uuid.uuid4()).split("-")[0]
 

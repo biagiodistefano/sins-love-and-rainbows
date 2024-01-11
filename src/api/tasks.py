@@ -6,6 +6,8 @@ from django.contrib.sites.models import Site
 from django.db.models import F, Q
 from django.shortcuts import reverse
 from django.utils import timezone
+from django.dispatch import receiver
+from django.db.models.signals import post_save
 
 from . import models
 from .messages import send_whatsapp_message
