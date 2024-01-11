@@ -190,6 +190,12 @@ AUTH_USER_MODEL = "api.Person"
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
+    "formatters": {
+        "verbose": {
+            "format": "{levelname} {asctime} {name} {message}",
+            "style": "{",
+        },
+    },
     'handlers': {
         'django_file': {
             'level': 'ERROR',
@@ -200,6 +206,7 @@ LOGGING = {
             'level': 'INFO',
             'class': 'logging.FileHandler',
             'filename': 'twilio_messages.log',  # File for logging Twilio messages
+            'formatter': 'verbose',
         },
         'console': {
             'level': 'ERROR',
