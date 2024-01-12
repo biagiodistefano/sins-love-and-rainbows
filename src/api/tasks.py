@@ -6,12 +6,9 @@ from django.contrib.sites.models import Site
 from django.db.models import F, Q
 from django.shortcuts import reverse
 from django.utils import timezone
-from django.dispatch import receiver
-from django.db.models.signals import post_save
 
 from . import models
 from .messages import send_whatsapp_message
-from .unrelated import send_prescription_email  # noqa: F401
 
 logger = logging.getLogger("twilio_whatsapp")
 
@@ -81,9 +78,9 @@ def _get_recipients(
     filter_recipients: list[models.Person] | None = None,
 ) -> list[models.Person]:
     conditions = (
-            (Q(status__in=["Y", "M"]) | Q(status__isnull=True)) &
-            Q(person__preferences__whatsapp_notifications=True) & Q(person__phone_number__isnull=False)
-        )
+        (Q(status__in=["Y", "M"]) | Q(status__isnull=True)) &
+        Q(person__preferences__whatsapp_notifications=True) & Q(person__phone_number__isnull=False)
+    )
     if filter_recipients:
         conditions &= Q(person__in=filter_recipients)
     return [
