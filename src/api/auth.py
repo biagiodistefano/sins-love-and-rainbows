@@ -41,5 +41,5 @@ class TwilioAuth(APIKeyHeader):
             post_vars = request.POST.dict()
             # The Twilio signature from the X-Twilio-Signature header
             return validator.validate(url, post_vars, key)
-        except Exception as e:
+        except Exception:
             pass

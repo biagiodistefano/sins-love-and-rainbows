@@ -12,6 +12,6 @@ handler404 = custom_404
 
 urlpatterns = [
     path(settings.ADMIN_URL, admin.site.urls),
-    path('', include('slrportal.urls')),
-    path('api/', api.urls),
+    path("", include("slrportal.urls")),
+    path("api/", api.urls),
 ]

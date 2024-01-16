@@ -28,11 +28,7 @@ def test_external_link(api_client: Client) -> None:
     create = api_client.post(
         f"/api/party/{party_edition}/external-link/create",
         data=json.dumps(
-            {
-                "name": "Party Playlist",
-                "url": "https://www.playlist.com/random",
-                "description": "Test Playlist"
-            }
+            {"name": "Party Playlist", "url": "https://www.playlist.com/random", "description": "Test Playlist"}
         ),
         content_type="application/json",
     )
@@ -61,11 +57,7 @@ def test_external_link(api_client: Client) -> None:
     create = api_client.post(
         f"/api/party/{party_edition}/external-link/create",
         data=json.dumps(
-            {
-                "name": "Party Playlist 2",
-                "url": "https://www.playlist.com/random2",
-                "description": "Test Playlist 3"
-            }
+            {"name": "Party Playlist 2", "url": "https://www.playlist.com/random2", "description": "Test Playlist 3"}
         ),
         content_type="application/json",
     )

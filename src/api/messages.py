@@ -14,7 +14,7 @@ logger = logging.getLogger("twilio_whatsapp")
 
 
 def load_templates():
-    template_dir = Path(__file__).parent / 'templates' / 'api'
+    template_dir = Path(__file__).parent / "templates" / "api"
     templates = {}
     delta_dict = {
         "Invitation": (relativedelta(months=1, hour=1), None),
@@ -22,8 +22,8 @@ def load_templates():
         "1-week reminder": (relativedelta(weeks=1, hour=1), timedelta(days=1)),
         "Final reminder": (relativedelta(days=2, hour=1), timedelta(days=1)),
     }
-    for file_path in template_dir.glob('*.txt'):
-        with file_path.open('r') as file:
+    for file_path in template_dir.glob("*.txt"):
+        with file_path.open("r") as file:
             content = file.read().strip()
         # Use the file stem (without extension) as the key and content as the value
         file_stem = file_path.stem
@@ -41,7 +41,7 @@ def send_whatsapp_message(to: str, body: str) -> MessageInstance | None:
     auth_token = settings.TWILIO_AUTH_TOKEN
     from_whatsapp_number = settings.TWILIO_FROM_WHATSAPP_NUMBER
     client = TwilioClient(account_sid, auth_token)
-    callback_path = reverse('slr-api:twilio_status_callback')
+    callback_path = reverse("slr-api:twilio_status_callback")
     callback_url = (settings.NGROK_URL or f"https://{Site.objects.get_current().domain}") + callback_path
     message = client.messages.create(
         body=body,

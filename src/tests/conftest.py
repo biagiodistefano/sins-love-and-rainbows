@@ -1,5 +1,3 @@
-import json
-
 import pytest
 from django.test.client import Client
 from api.models import ApiClient

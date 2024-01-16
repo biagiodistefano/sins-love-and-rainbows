@@ -4,7 +4,7 @@ _user_host_thread_local = local()
 
 
 def get_current_host():
-    return getattr(_user_host_thread_local, 'host', None)
+    return getattr(_user_host_thread_local, "host", None)
 
 
 class HostMiddleware:

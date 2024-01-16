@@ -42,7 +42,7 @@ def test_allergy(api_client: Client) -> None:
             "/api/person/create",
             data=json.dumps(
                 {"username": random_person, "first_name": random_person, "from_abroad": False, "in_broadcast": True}
-                ),
+            ),
             content_type="application/json",
         )
         assert create.status_code == 201

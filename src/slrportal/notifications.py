@@ -19,12 +19,13 @@ def notify_admins_of_rsvp_change(person: models.Person, party: models.Party, rsv
     """
 
     site = Site.objects.get_current()
-    party_url = f"https://{site.domain}" + reverse('party', kwargs={"edition": party.edition})
+    party_url = f"https://{site.domain}" + reverse("party", kwargs={"edition": party.edition})
 
     subject = f"{person.get_full_name()} RSVP'd {rsvp.get_status_display()} to {party}"
     message = (
         f"{person.get_full_name()} has replied {rsvp.get_status_display()} to their invitation to {party}\n\n"
-        f"View the party details at {party_url}")
+        f"View the party details at {party_url}"
+    )
 
     send_mail(
         subject,
@@ -38,12 +39,12 @@ def notify_admins_of_rsvp_change(person: models.Person, party: models.Party, rsv
 @shared_task
 def notify_admins_of_item_change(item: models.Item, person: models.Person, action: str) -> None:
     site = Site.objects.get_current()
-    party_url = f"https://{site.domain}" + reverse('party', kwargs={"edition": item.party.edition})
+    party_url = f"https://{site.domain}" + reverse("party", kwargs={"edition": item.party.edition})
 
     subject = f"{person.get_full_name()} {action} {item.name} for {item.party}"
     message = (
-        f"{person.get_full_name()} {action} {item.name} for {item.party}\n\n"
-        f"View the party details at {party_url}")
+        f"{person.get_full_name()} {action} {item.name} for {item.party}\n\n" f"View the party details at {party_url}"
+    )
 
     send_mail(
         subject,

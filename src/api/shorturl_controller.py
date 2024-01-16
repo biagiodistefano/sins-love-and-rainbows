@@ -10,7 +10,6 @@ from .auth import AUTH
 
 @api_controller(prefix_or_class="/s", tags=["Short URL"], auth=AUTH)
 class ShortURLController:  # type: ignore
-
     @route.post("/create", response={201: schema.ShortURLSchema})
     def create_short_url(self, request: HttpRequest, url: schema.ShortURLSchemaCreate):
         short_url = models.ShortUrl.objects.create(**url.dict(exclude_none=True))

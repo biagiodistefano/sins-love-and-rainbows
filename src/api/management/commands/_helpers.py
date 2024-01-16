@@ -44,7 +44,7 @@ def create_test_party() -> Party:
 
     party, _ = Party.objects.get_or_create(
         name="Test Party", edition="Test Edition", date_and_time=datetime(2020, 1, 1, 12, 0, 0)
-        )  # noqa: E501
+    )  # noqa: E501
 
     caponata = _create_caponata(party)
     party.item_set.add(caponata)

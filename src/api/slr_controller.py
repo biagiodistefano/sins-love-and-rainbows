@@ -14,7 +14,6 @@ from .auth import AUTH
 
 @api_controller(tags=["Sins, Love and Rainbows"], auth=AUTH)
 class SLRController:  # type: ignore
-
     # Party
 
     @route.post("/party/create", tags=["party"], response={201: schema.PartySchema})
@@ -101,8 +100,10 @@ class SLRController:  # type: ignore
         return 200, party.not_invited_people()
 
     @route.post(
-        "/party/{edition}/invite/{person_id}/create", tags=["party", "invites"],
-        response={201: schema.InviteSchema}, url_name="invite_person"
+        "/party/{edition}/invite/{person_id}/create",
+        tags=["party", "invites"],
+        response={201: schema.InviteSchema},
+        url_name="invite_person",
     )
     def invite_person(self, request: HttpRequest, edition: str, person_id: str):
         party = get_object_or_404(models.Party, edition=edition)
@@ -110,8 +111,10 @@ class SLRController:  # type: ignore
         return 201, models.Invite.objects.get_or_create(party=party, person=person)[0]
 
     @route.delete(
-        "/party/{edition}/invite/{person_id}", tags=["party", "invites"], response={204: None},
-        url_name="uninvite_person"
+        "/party/{edition}/invite/{person_id}",
+        tags=["party", "invites"],
+        response={204: None},
+        url_name="uninvite_person",
     )
     def uninvite_person(self, request: HttpRequest, edition: str, person_id: str):
         party = get_object_or_404(models.Party, edition=edition)
@@ -123,8 +126,10 @@ class SLRController:  # type: ignore
         return 204, None
 
     @route.put(
-        "/party/{edition}/invite/{person_id}/{status}", tags=["party", "invites"],
-        response={200: schema.InviteSchema}, url_name="update_invite_status"
+        "/party/{edition}/invite/{person_id}/{status}",
+        tags=["party", "invites"],
+        response={200: schema.InviteSchema},
+        url_name="update_invite_status",
     )
     def update_invite(self, request: HttpRequest, edition: str, person_id: str, status: t.Literal["y", "m", "n"]):
         party = get_object_or_404(models.Party, edition=edition)
@@ -145,8 +150,9 @@ class SLRController:  # type: ignore
         return 200, invite
 
     @route.post(
-        "/party/{edition}/external-link/create", tags=["party", "external_links"],
-        response={201: schema.ExternalLinkSchema}
+        "/party/{edition}/external-link/create",
+        tags=["party", "external_links"],
+        response={201: schema.ExternalLinkSchema},
     )
     def create_external_link(self, request: HttpRequest, edition: str, external_link: schema.ExternalLinkSchemaCreate):
         party = get_object_or_404(models.Party, edition=edition)
@@ -155,8 +161,9 @@ class SLRController:  # type: ignore
         return 201, instance
 
     @route.post(
-        "/party/{edition}/external-link/{external_link_id}/assign", tags=["party", "external_links"],
-        response={200: None}
+        "/party/{edition}/external-link/{external_link_id}/assign",
+        tags=["party", "external_links"],
+        response={200: None},
     )
     def assign_external_link_to_party(self, request: HttpRequest, edition: str, external_link_id: int):
         party = get_object_or_404(models.Party, edition=edition)
@@ -165,8 +172,9 @@ class SLRController:  # type: ignore
         return 200, None
 
     @route.delete(
-        "/party/{edition}/external-link/{external_link_id}/assign", tags=["party", "external_links"],
-        response={200: None}
+        "/party/{edition}/external-link/{external_link_id}/assign",
+        tags=["party", "external_links"],
+        response={200: None},
     )
     def unassign_external_link_from_party(self, request: HttpRequest, edition: str, external_link_id: int):
         party = get_object_or_404(models.Party, edition=edition)
@@ -175,16 +183,18 @@ class SLRController:  # type: ignore
         return 200, None
 
     @route.get(
-        "/party/{edition}/external-link/all", tags=["party", "external_links"],
-        response={200: list[schema.ExternalLinkSchema]}
+        "/party/{edition}/external-link/all",
+        tags=["party", "external_links"],
+        response={200: list[schema.ExternalLinkSchema]},
     )
     def list_external_links(self, request: HttpRequest, edition: str):
         party = get_object_or_404(models.Party, edition=edition)
         return 200, list(party.externallink_set.all())
 
     @route.get(
-        "/party/{edition}/external-link/{external_link_id}", tags=["party", "external_links"],
-        response={200: schema.ExternalLinkSchema}
+        "/party/{edition}/external-link/{external_link_id}",
+        tags=["party", "external_links"],
+        response={200: schema.ExternalLinkSchema},
     )
     def read_external_link(self, request: HttpRequest, edition: str, external_link_id: int):
         party = get_object_or_404(models.Party, edition=edition)
@@ -193,12 +203,12 @@ class SLRController:  # type: ignore
         raise Http404
 
     @route.put(
-        "/party/{edition}/external-link/{external_link_id}", tags=["party", "external_links"],
-        response={200: schema.ExternalLinkSchema}
+        "/party/{edition}/external-link/{external_link_id}",
+        tags=["party", "external_links"],
+        response={200: schema.ExternalLinkSchema},
     )
     def update_external_link(
-        self, request: HttpRequest, edition: str, external_link_id: int,
-        external_link: schema.ExternalLinkSchemaUpdate
+        self, request: HttpRequest, edition: str, external_link_id: int, external_link: schema.ExternalLinkSchemaUpdate
     ):
         party = get_object_or_404(models.Party, edition=edition)
         return 200, self.update_object(party.externallink_set, external_link, id=external_link_id)
@@ -210,8 +220,7 @@ class SLRController:  # type: ignore
         return 204, None
 
     @route.delete(
-        "/party/{edition}/external-link/{external_link_id}", tags=["party", "external_links"],
-        response={204: None}
+        "/party/{edition}/external-link/{external_link_id}", tags=["party", "external_links"], response={204: None}
     )
     def delete_external_link(self, request: HttpRequest, edition: str, external_link_id: int):
         party = get_object_or_404(models.Party, edition=edition)
@@ -262,8 +271,9 @@ class SLRController:  # type: ignore
         return 204, None
 
     @route.post(
-        "/ingredient/{ingredient_id}/allergy/{person_id}/create", tags=["ingredients", "allergies"],
-        response={201: schema.AllergySchema}
+        "/ingredient/{ingredient_id}/allergy/{person_id}/create",
+        tags=["ingredients", "allergies"],
+        response={201: schema.AllergySchema},
     )
     def create_allergy(self, request: HttpRequest, ingredient_id: str, person_id: str):
         ingredient = get_object_or_404(models.Ingredient, id=ingredient_id)
@@ -272,8 +282,7 @@ class SLRController:  # type: ignore
         return 201, allergy
 
     @route.post(
-        "/person/{person_id}/allergy/create", tags=["people", "allergies"],
-        response={201: schema.AllergySchema}
+        "/person/{person_id}/allergy/create", tags=["people", "allergies"], response={201: schema.AllergySchema}
     )
     def create_allergy_ingredient(
         self, request: HttpRequest, person_id: str, ingredient: schema.IngredientSchemaCreate
@@ -285,24 +294,23 @@ class SLRController:  # type: ignore
         return 201, allergy
 
     @route.get(
-        "/ingredient/{ingredient_id}/allergy", tags=["ingredients", "allergies"],
-        response={200: t.List[schema.PersonSchema], 404: None}
+        "/ingredient/{ingredient_id}/allergy",
+        tags=["ingredients", "allergies"],
+        response={200: t.List[schema.PersonSchema], 404: None},
     )
     def read_allergy(self, request: HttpRequest, ingredient_id: str):
         ingredient = get_object_or_404(models.Ingredient, id=ingredient_id)
         return 200, ingredient.allergic_people.all()
 
     @route.get(
-        "/person/{person_id}/allergies", tags=["people", "allergies"],
-        response={200: t.List[schema.IngredientSchema]}
+        "/person/{person_id}/allergies", tags=["people", "allergies"], response={200: t.List[schema.IngredientSchema]}
     )
     def list_person_allergies(self, request: HttpRequest, person_id: str):
         person = get_object_or_404(models.Person, id=person_id)
         return 200, person.allergies.all()
 
     @route.delete(
-        "/ingredient/{ingredient_id}/allergy/{person_id}", tags=["ingredients", "allergies"],
-        response={204: None}
+        "/ingredient/{ingredient_id}/allergy/{person_id}", tags=["ingredients", "allergies"], response={204: None}
     )
     def delete_allergy(self, request: HttpRequest, ingredient_id: str, person_id: str):
         allergy = get_object_or_404(models.Allergy, ingredient_id=ingredient_id, person_id=person_id)
@@ -333,7 +341,8 @@ class SLRController:  # type: ignore
 
     @route.post(
         "/party/{edition}/item/{item_id}/ingredient/{ingredient_id}/add",
-        tags=["party", "items", "ingredients"], response={201: schema.ItemSchema, 400: dict[str, str]}
+        tags=["party", "items", "ingredients"],
+        response={201: schema.ItemSchema, 400: dict[str, str]},
     )
     def add_ingredient_to_item(self, request: HttpRequest, edition: str, item_id: int, ingredient_id: int):
         party = get_object_or_404(models.Party, edition=edition)
@@ -348,7 +357,8 @@ class SLRController:  # type: ignore
 
     @route.delete(
         "/party/{edition}/item/{item_id}/ingredient/{ingredient_id}/remove",
-        tags=["party", "items", "ingredients"], response={204: None, 404: None}
+        tags=["party", "items", "ingredients"],
+        response={204: None, 404: None},
     )
     def remove_ingredient_from_item(self, request: HttpRequest, edition: str, item_id: int, ingredient_id: int):
         party = get_object_or_404(models.Party, edition=edition)
@@ -372,8 +382,9 @@ class SLRController:  # type: ignore
         return 204, None
 
     @route.post(
-        "/party/{edition}/item/{item_id}/person/{person_id}/assign", tags=["party", "items", "people"],
-        response={201: schema.ItemSchema, 400: dict[str, str]}
+        "/party/{edition}/item/{item_id}/person/{person_id}/assign",
+        tags=["party", "items", "people"],
+        response={201: schema.ItemSchema, 400: dict[str, str]},
     )
     def assign_person_to_item(self, request: HttpRequest, edition: str, item_id: int, person_id: str):
         party = get_object_or_404(models.Party, edition=edition)
@@ -390,8 +401,9 @@ class SLRController:  # type: ignore
         return 201, item
 
     @route.delete(
-        "/party/{edition}/item/{item_id}/person/{person_id}/unassign", tags=["party", "items", "people"],
-        response={204: None, 404: None}
+        "/party/{edition}/item/{item_id}/person/{person_id}/unassign",
+        tags=["party", "items", "people"],
+        response={204: None, 404: None},
     )
     def unassign_person_from_item(self, request: HttpRequest, edition: str, item_id: int, person_id: str):
         party = get_object_or_404(models.Party, edition=edition)

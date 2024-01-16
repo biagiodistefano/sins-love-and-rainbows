@@ -87,7 +87,7 @@ def test_party_invite(api_client: Client) -> None:
     party = create.json()
     party_edition = party["edition"]
 
-    assert party["invite_summary"] == {"yes": 0, "maybe": 0, "no": 0, "no_response": 0,  "from_abroad": 0}
+    assert party["invite_summary"] == {"yes": 0, "maybe": 0, "no": 0, "no_response": 0, "from_abroad": 0}
     assert len(party["invite_set"]) == 0
 
     people_ids = []
@@ -151,9 +151,7 @@ def test_party_invite(api_client: Client) -> None:
     assert party["invite_summary"] == {"yes": 1, "maybe": 1, "no": 1, "no_response": 0, "from_abroad": 1}
 
     create = api_client.post(
-        "/api/ingredient/create",
-        data=json.dumps({"name": "Tomato"}),
-        content_type="application/json"
+        "/api/ingredient/create", data=json.dumps({"name": "Tomato"}), content_type="application/json"
     )
     assert create.status_code == 201
     ingredient_id = create.json()["id"]

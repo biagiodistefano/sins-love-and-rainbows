@@ -16,7 +16,7 @@ api = NinjaExtraAPI(
     servers=[
         {"url": "https://sinsloveandrainbows.eu", "description": "Production Server"},
         # {"url": "http://localhost:8000", "description": "Development Server"},
-    ]
+    ],
 )
 
 api.register_controllers(

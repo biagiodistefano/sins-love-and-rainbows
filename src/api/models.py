@@ -4,22 +4,17 @@ import uuid
 from typing import Any, Optional
 
 from django.contrib.auth.models import AbstractUser
-from django.contrib.sites.models import Site
 from django.core.exceptions import ValidationError
 from django.db import models
-from django.db.models.signals import post_save
-from django.dispatch import receiver
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 from markdownfield.models import MarkdownField, RenderedMarkdownField
 from markdownfield.validators import VALIDATOR_STANDARD
 
-from .messages import TEMPLATES
-
 
 class PhoneNumberField(models.CharField):
     def __init__(self, *args, **kwargs) -> None:
-        kwargs['max_length'] = 32  # Adjust as necessary
+        kwargs["max_length"] = 32  # Adjust as necessary
         super().__init__(*args, **kwargs)
 
     def clean(self, value: str | None, model_instance: Any) -> str | None:
@@ -30,11 +25,11 @@ class PhoneNumberField(models.CharField):
 
     @staticmethod
     def validate_phone_number(phone_number: str) -> str:
-        if not phone_number.startswith('+'):
+        if not phone_number.startswith("+"):
             raise ValidationError("Phone number must start with a '+'")
 
         # Remove spaces, dashes, and parentheses
-        sanitized_number = re.sub(r'[ ()-]', '', phone_number).strip()
+        sanitized_number = re.sub(r"[ ()-]", "", phone_number).strip()
 
         # Check if sanitized number consists only of digits after '+'
         if not sanitized_number[1:].isdigit():
@@ -57,11 +52,11 @@ class LowerCharField(StrippedCharField):
 
 class Person(AbstractUser):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4)
-    password = models.CharField(_('password'), max_length=128, blank=True, null=True)
+    password = models.CharField(_("password"), max_length=128, blank=True, null=True)
     phone_number = PhoneNumberField(null=True, blank=True, db_index=True)
     from_abroad = models.BooleanField(default=False, db_index=True)
     in_broadcast = models.BooleanField(default=True, db_index=True)
-    allergies = models.ManyToManyField('Ingredient', blank=True, through='Allergy')
+    allergies = models.ManyToManyField("Ingredient", blank=True, through="Allergy")
 
     msg_template = (
         "Hi!\n\n"
@@ -84,17 +79,15 @@ class Person(AbstractUser):
         return self.get_full_name()
 
     class Meta:
-        verbose_name_plural = 'people'
-        ordering = ['first_name', 'last_name']
+        verbose_name_plural = "people"
+        ordering = ["first_name", "last_name"]
 
     @property
     def full_name(self) -> str:
         return self.get_full_name()
 
     def get_display_name(self) -> str:
-        users_with_same_first_name = Person.objects.filter(
-            first_name=self.first_name
-        ).exclude(id=self.id)
+        users_with_same_first_name = Person.objects.filter(first_name=self.first_name).exclude(id=self.id)
 
         if not users_with_same_first_name:
             return self.first_name
@@ -117,7 +110,7 @@ class Person(AbstractUser):
 
         return f"{self.first_name} {self.last_name[:min_chars]}".strip()
 
-    def is_invited_to(self, party: 'Party') -> bool:
+    def is_invited_to(self, party: "Party") -> bool:
         return party.invite_set.filter(person=self).exists()
 
 
@@ -127,8 +120,8 @@ class Preferences(models.Model):
     email_notifications = models.BooleanField(default=False, db_index=True)
 
     class Meta:
-        verbose_name_plural = 'preferences'
-        ordering = ['person__first_name', 'person__last_name']
+        verbose_name_plural = "preferences"
+        ordering = ["person__first_name", "person__last_name"]
 
     def __str__(self) -> str:
         return f"{self.person}'s preferences"
@@ -140,26 +133,23 @@ class Party(models.Model):
     date_and_time = models.DateTimeField(db_index=True)
     location = models.CharField(max_length=120, db_index=True, null=True, blank=True)
     description = MarkdownField(
-        rendered_field='description_rendered', validator=VALIDATOR_STANDARD, default="",
-        blank=True
+        rendered_field="description_rendered", validator=VALIDATOR_STANDARD, default="", blank=True
     )  # noqa: E501
     description_rendered = RenderedMarkdownField(null=True, blank=True)
-    logo = models.ImageField(upload_to='logos', null=True, blank=True)
+    logo = models.ImageField(upload_to="logos", null=True, blank=True)
     closed = models.BooleanField(default=True, db_index=True)
     private = models.BooleanField(default=False, db_index=True)
     max_people = models.PositiveSmallIntegerField(default=0, db_index=True)
 
     @classmethod
-    def get_next(cls) -> Optional['Party']:
-        return cls.objects.filter(date_and_time__gte=timezone.now(), closed=False).earliest(
-            'date_and_time'
-        )
+    def get_next(cls) -> Optional["Party"]:
+        return cls.objects.filter(date_and_time__gte=timezone.now(), closed=False).earliest("date_and_time")
 
     @property
     def logo_url(self) -> str | None:
         return self.logo.url if self.logo else None
 
-    def invite(self, person: Person) -> 'Invite':
+    def invite(self, person: Person) -> "Invite":
         instance, _ = Invite.objects.get_or_create(person=person, party=self)
         return instance
 
@@ -167,13 +157,8 @@ class Party(models.Model):
         Invite.objects.filter(person=person, party=self).delete()
 
     def allergy_list(self) -> list[str]:
-        invites = self.invite_set.filter(status='Y').prefetch_related('person__allergies')
-        return list(
-            set(
-                [allergy.name for invite in invites for allergy in
-                 invite.person.allergies.all()]
-            )
-        )  # noqa: E501
+        invites = self.invite_set.filter(status="Y").prefetch_related("person__allergies")
+        return list(set([allergy.name for invite in invites for allergy in invite.person.allergies.all()]))  # noqa: E501
 
     def from_abroad_count(self) -> int:
         return self.invite_set.filter(person__from_abroad=True, status__in=("Y", "M")).count()
@@ -185,16 +170,16 @@ class Party(models.Model):
         return list(Person.objects.exclude(invite__party=self))
 
     def yes_people(self) -> models.QuerySet:
-        return self.invite_set.filter(status='Y').prefetch_related('person')
+        return self.invite_set.filter(status="Y").prefetch_related("person")
 
     def maybe_people(self) -> models.QuerySet:
-        return self.invite_set.filter(status='M').prefetch_related('person')
+        return self.invite_set.filter(status="M").prefetch_related("person")
 
     def no_people(self) -> models.QuerySet:
-        return self.invite_set.filter(status='N').prefetch_related('person')
+        return self.invite_set.filter(status="N").prefetch_related("person")
 
     def no_response_people(self) -> models.QuerySet:
-        return self.invite_set.filter(status=None).prefetch_related('person')
+        return self.invite_set.filter(status=None).prefetch_related("person")
 
     def yes_count(self) -> int:
         return self.yes_people().count()
@@ -218,13 +203,13 @@ class Party(models.Model):
         }
 
     def food_items(self) -> models.QuerySet:
-        return self.item_set.filter(category='F').prefetch_related('assigned_to')
+        return self.item_set.filter(category="F").prefetch_related("assigned_to")
 
     def drink_items(self) -> models.QuerySet:
-        return self.item_set.filter(category='D').prefetch_related('assigned_to')
+        return self.item_set.filter(category="D").prefetch_related("assigned_to")
 
     def other_items(self) -> models.QuerySet:
-        return self.item_set.filter(category='O').prefetch_related('assigned_to')
+        return self.item_set.filter(category="O").prefetch_related("assigned_to")
 
     def iter_items(self) -> list[tuple[str, models.QuerySet]]:
         return [
@@ -258,17 +243,13 @@ class Party(models.Model):
 
     def get_people_with_no_items(self) -> models.QuerySet:
         # Get people who have RSVP'd 'Yes' or 'Maybe'
-        rsvp_people = self.invite_set.filter(status__in=['Y', 'M']).values_list('person', flat=True)
+        rsvp_people = self.invite_set.filter(status__in=["Y", "M"]).values_list("person", flat=True)
 
         # Get people who have been assigned to items
-        assigned_people = self.item_set.filter(assigned_to__isnull=False).values_list('assigned_to', flat=True)
+        assigned_people = self.item_set.filter(assigned_to__isnull=False).values_list("assigned_to", flat=True)
 
         # Filter out people who have been assigned any items
-        people_with_no_items = Person.objects.filter(
-            id__in=rsvp_people
-        ).exclude(
-            id__in=assigned_people
-        )
+        people_with_no_items = Person.objects.filter(id__in=rsvp_people).exclude(id__in=assigned_people)
 
         return people_with_no_items
 
@@ -276,16 +257,20 @@ class Party(models.Model):
         return self.name
 
     class Meta:
-        verbose_name_plural = 'parties'
-        ordering = ['-date_and_time']
+        verbose_name_plural = "parties"
+        ordering = ["-date_and_time"]
 
 
 class Invite(models.Model):
     person = models.ForeignKey(Person, on_delete=models.CASCADE)
     party = models.ForeignKey(Party, on_delete=models.CASCADE)
     status = models.CharField(
-        max_length=1, choices=((None, 'No response'), ('Y', 'Yes'), ('N', 'No'), ('M', 'Maybe')), default=None,
-        db_index=True, null=True, blank=True
+        max_length=1,
+        choices=((None, "No response"), ("Y", "Yes"), ("N", "No"), ("M", "Maybe")),
+        default=None,
+        db_index=True,
+        null=True,
+        blank=True,
     )  # noqa: E501
     last_updated = models.DateTimeField(auto_now=True, db_index=True)
     show_in_guest_list = models.BooleanField(default=False, db_index=True)
@@ -298,18 +283,18 @@ class Invite(models.Model):
         return f"{self.person} @ {self.party}: {self.status}"
 
     class Meta:
-        unique_together = ('person', 'party')
+        unique_together = ("person", "party")
 
         indexes = [
-            models.Index(fields=['person', 'party']),
+            models.Index(fields=["person", "party"]),
         ]
-        ordering = ['-status', 'person__first_name', 'person__last_name']
+        ordering = ["-status", "person__first_name", "person__last_name"]
 
 
 class Ingredient(models.Model):
     name = LowerCharField(max_length=30, db_index=True, unique=True)
-    items = models.ManyToManyField('Item', blank=True)
-    allergic_people = models.ManyToManyField(Person, through='Allergy')
+    items = models.ManyToManyField("Item", blank=True)
+    allergic_people = models.ManyToManyField(Person, through="Allergy")
 
     def __str__(self):
         return self.name
@@ -323,23 +308,22 @@ class Allergy(models.Model):
         return self.ingredient.name
 
     class Meta:
-        verbose_name_plural = 'allergies'
+        verbose_name_plural = "allergies"
 
 
 class Message(models.Model):
     party = models.ForeignKey(Party, on_delete=models.CASCADE)
     title = models.CharField(max_length=30, db_index=True, null=True, blank=True)
-    text = MarkdownField(rendered_field='text_rendered', validator=VALIDATOR_STANDARD, default="", blank=True)
+    text = MarkdownField(rendered_field="text_rendered", validator=VALIDATOR_STANDARD, default="", blank=True)
     text_rendered = RenderedMarkdownField()
     due_at = models.DateTimeField(db_index=True, null=True, blank=True)
     send_threshold = models.DurationField(null=True, blank=True)
     draft = models.BooleanField(default=True, db_index=True)
+    autosend = models.BooleanField(default=False, db_index=True)
 
     class Meta:
-        ordering = ['-party__date_and_time', '-due_at']
-        index_together = [
-            ("party", "due_at", "draft")
-        ]
+        ordering = ["-party__date_and_time", "-due_at"]
+        index_together = [("party", "due_at", "draft", "autosend")]
 
     @property
     def party_edition(self) -> str:
@@ -360,9 +344,11 @@ class MessageSent(models.Model):
     sent = models.BooleanField(default=False, db_index=True)
     sent_at = models.DateTimeField(auto_now_add=True, db_index=True)
     sent_via = models.CharField(
-        max_length=30, db_index=True, choices=(
-            ('W', 'WhatsApp'), ('S', 'SMS'), ("E", "Email"), ("T", "Telegram")
-        ), null=True, blank=True
+        max_length=30,
+        db_index=True,
+        choices=(("W", "WhatsApp"), ("S", "SMS"), ("E", "Email"), ("T", "Telegram")),
+        null=True,
+        blank=True,
     )
     sid = models.CharField(max_length=34, null=True, blank=True)
     status = models.CharField(max_length=30, db_index=True, null=True, blank=True)
@@ -370,7 +356,7 @@ class MessageSent(models.Model):
     error_message = models.TextField(null=True, blank=True)
 
     class Meta:
-        verbose_name_plural = 'Messages Sent'
+        verbose_name_plural = "Messages Sent"
         index_together = [
             ("message", "person", "party", "sent"),
         ]
@@ -394,14 +380,14 @@ class ExternalLink(models.Model):
 
 class Item(models.Model):
     party = models.ForeignKey(Party, on_delete=models.CASCADE)
-    category = models.CharField(max_length=30, db_index=True, choices=(('F', 'Food'), ('D', 'Drink'), ('O', 'Other')))
+    category = models.CharField(max_length=30, db_index=True, choices=(("F", "Food"), ("D", "Drink"), ("O", "Other")))
     name = StrippedCharField(max_length=120, db_index=True)
     quantity = StrippedCharField(max_length=30, db_index=True, null=True, blank=True)
     description = StrippedCharField(max_length=250, db_index=True, null=True, blank=True)
     url = models.URLField(db_index=True, null=True, blank=True)
     ingredients = models.ManyToManyField(Ingredient, blank=True)
     assigned_to = models.ManyToManyField(Person, blank=True)
-    created_by = models.ForeignKey(Person, on_delete=models.CASCADE, null=True, blank=True, related_name='created_by')
+    created_by = models.ForeignKey(Person, on_delete=models.CASCADE, null=True, blank=True, related_name="created_by")
 
     @property
     def allergic_people(self) -> models.QuerySet:
@@ -412,7 +398,7 @@ class Item(models.Model):
         return [i.name for i in Ingredient.objects.filter(allergy__person__in=allergen_people)]
 
     def assign_to(self, person: Person) -> None:
-        if self.party.invite_set.filter(person=person, status__in=('Y', 'M')).exists():
+        if self.party.invite_set.filter(person=person, status__in=("Y", "M")).exists():
             self.assigned_to.add(person)
             self.save()
             return
@@ -430,14 +416,14 @@ class Item(models.Model):
 
     class Meta:
         indexes = [
-            models.Index(fields=['party', 'category']),
+            models.Index(fields=["party", "category"]),
         ]
 
 
 class PartyFile(models.Model):
     parties = models.ManyToManyField(Party, blank=True)
     name = models.CharField(max_length=30, db_index=True)
-    file = models.FileField(upload_to='files', db_index=True)
+    file = models.FileField(upload_to="files", db_index=True)
     description = models.CharField(max_length=250, db_index=True, null=True, blank=True)
 
     @property

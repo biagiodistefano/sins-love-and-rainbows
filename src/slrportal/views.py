@@ -5,8 +5,13 @@ from django.contrib.auth.decorators import login_required
 from django.core import exceptions
 from django.db import transaction
 from django.http import (
-    Http404, HttpResponse, HttpResponseBadRequest, HttpResponseForbidden, HttpResponseNotFound,
-    HttpResponseRedirect, JsonResponse,
+    Http404,
+    HttpResponse,
+    HttpResponseBadRequest,
+    HttpResponseForbidden,
+    HttpResponseNotFound,
+    HttpResponseRedirect,
+    JsonResponse,
 )
 from django.http.request import HttpRequest
 from django.shortcuts import get_object_or_404, redirect, render, reverse
@@ -17,13 +22,12 @@ from django.views import View
 from django.views.decorators.http import require_POST
 
 from api import models
-from api.models import Person
 from . import notifications
 from .forms import ItemForm, RsvpForm
 
 
 def home(request: HttpRequest) -> HttpResponse:
-    return render(request, 'slrportal/index.html', {'user': request.user})
+    return render(request, "slrportal/index.html", {"user": request.user})
 
 
 def redirect_url(request: HttpRequest, short_url: str):
@@ -32,10 +36,9 @@ def redirect_url(request: HttpRequest, short_url: str):
 
 
 def get_next_party(request: HttpRequest) -> HttpResponse:
-    upcoming_parties = models.Party.objects.filter(
-        date_and_time__gte=timezone.now(),
-        closed=False
-    ).order_by('date_and_time')
+    upcoming_parties = models.Party.objects.filter(date_and_time__gte=timezone.now(), closed=False).order_by(
+        "date_and_time"
+    )
 
     for party in upcoming_parties:
         # If the party is not private, redirect to it
@@ -52,7 +55,7 @@ def get_next_party(request: HttpRequest) -> HttpResponse:
 
 
 def redirect_to_party(party: models.Party) -> HttpResponse:
-    url = reverse('party', kwargs={"edition": party.edition})
+    url = reverse("party", kwargs={"edition": party.edition})
     return redirect(url)
 
 
@@ -63,8 +66,8 @@ def party_detail(request: HttpRequest, edition: str) -> HttpResponse:
         invite = models.Invite.objects.filter(party=party, person=request.user).first()
     if party.private and invite is None:
         raise Http404("No upcoming parties found.")
-    context = {'party': party, 'person': request.user, 'invite': invite}
-    return render(request, 'slrportal/party_detail.html', context)
+    context = {"party": party, "person": request.user, "invite": invite}
+    return render(request, "slrportal/party_detail.html", context)
 
 
 @login_required
@@ -195,31 +198,31 @@ def accept_cookies(request: HttpRequest) -> HttpResponse:
 
 @require_POST
 def logout_view(request: HttpRequest) -> HttpResponse:
-
     # Log out the user
     logout(request)
 
     # Get the URL of the previous page from the HTTP Referer header
-    next_page = request.META.get('HTTP_REFERER')
+    next_page = request.META.get("HTTP_REFERER")
 
     # If Referer is provided, strip the 'visitor_id' query param
     if next_page:
         url_parts = list(urlparse(next_page))
         query = parse_qs(url_parts[4])  # Query is the 4th element of the tuple
-        query.pop('visitor_id', None)  # Remove 'visitor_id' if present
+        query.pop("visitor_id", None)  # Remove 'visitor_id' if present
         url_parts[4] = urlencode(query, doseq=True)  # Re-encode the query string
         next_page = urlunparse(url_parts)
 
         return HttpResponseRedirect(next_page)
     else:
-        return redirect('home')  # Replace with the name of your default route
+        return redirect("home")  # Replace with the name of your default route
 
 
 @login_required
 def profile_view(request: HttpRequest) -> HttpResponse:
     return render(
-        request, 'slrportal/profile.html',
-        {'person': request.user, 'ingredients': [i.name for i in models.Ingredient.objects.all()]}
+        request,
+        "slrportal/profile.html",
+        {"person": request.user, "ingredients": [i.name for i in models.Ingredient.objects.all()]},
     )
 
 
@@ -227,12 +230,12 @@ def profile_view(request: HttpRequest) -> HttpResponse:
 @require_POST
 def add_allergy(request: HttpRequest) -> HttpResponse:
     person = get_object_or_404(models.Person, id=request.user.id)
-    allergy_name = request.POST.get('allergy')
+    allergy_name = request.POST.get("allergy")
     if allergy_name is None:
         return HttpResponseBadRequest("No allergy provided")
     ingredient, _ = models.Ingredient.objects.get_or_create(name=allergy_name)
     allergy, _ = models.Allergy.objects.get_or_create(ingredient=ingredient, person=person)
-    return redirect('profile')
+    return redirect("profile")
 
 
 @login_required
@@ -247,31 +250,32 @@ def delete_allergy(request: HttpRequest, allergy_id: int) -> HttpResponse:
 
     allergy.delete()
     # Redirect to the profile page, or wherever is appropriate
-    return redirect('profile')  # Replace 'profile' with the name of your profile view
+    return redirect("profile")  # Replace 'profile' with the name of your profile view
 
 
 def privacy_policy(request: HttpRequest) -> HttpResponse:
-    return render(request, 'slrportal/privacy_policy.html')
+    return render(request, "slrportal/privacy_policy.html")
 
 
 def custom_404(request, exception: Exception) -> HttpResponseNotFound:
-    template = loader.get_template('404.html')
+    template = loader.get_template("404.html")
     context = {
-        'request_path': request.path,
+        "request_path": request.path,
         # You can add more context variables here if needed
     }
     return HttpResponseNotFound(template.render(context, request))
 
 
-@method_decorator(login_required, name='dispatch')
+@method_decorator(login_required, name="dispatch")
 class DeleteProfileView(View):
     def get(self, request):
-        return render(request, 'slrportal/confirm_delete_profile.html')
+        return render(request, "slrportal/confirm_delete_profile.html")
 
     def post(self, request):
         user = request.user
         user.delete()
-        return redirect('home')
+        return redirect("home")
+
 
 # Add to urls.py
 # path('delete-profile/', views.DeleteProfileView.as_view(), name='delete_profile'),

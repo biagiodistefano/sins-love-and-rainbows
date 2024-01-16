@@ -25,19 +25,20 @@ def send_due_messages(
     if party is None:
         party = models.Party.get_next()
     site = Site.objects.get_current()
-    party_url = f"https://{site.domain}" + reverse('party', kwargs={"edition": party.edition})
+    party_url = f"https://{site.domain}" + reverse("party", kwargs={"edition": party.edition})
     sent = []
     current_time = timezone.now()
-    messages = models.Message.objects.filter(party=party, due_at__lte=current_time, draft=False).exclude(
-        Q(send_threshold__isnull=False) &
-        Q(due_at__lt=current_time - F('send_threshold'))
-    ).order_by("due_at")
+    messages = (
+        models.Message.objects.filter(party=party, due_at__lte=current_time, draft=False, autosend=True)
+        .exclude(Q(send_threshold__isnull=False) & Q(due_at__lt=current_time - F("send_threshold")))
+        .order_by("due_at")
+    )
     recipents = _get_recipients(party)
     for person in recipents:
         for message in messages:
-            if (msg := models.MessageSent.objects.filter(
-                message=message, party=party, person=person, sent=True
-            ).first()) and not force:
+            if (
+                msg := models.MessageSent.objects.filter(message=message, party=party, person=person, sent=True).first()
+            ) and not force:
                 sent.append(msg)
                 logger.info(f"Skipping {person}: Already sent (status: {msg.status})")
                 continue
@@ -48,15 +49,12 @@ def send_due_messages(
                 continue
             try:
                 twilio_message = send_whatsapp_message(
-                    to=person.phone_number, body=message.text.format(
-                        name=person.first_name, party=str(party), url=personal_url
-                    )
+                    to=person.phone_number,
+                    body=message.text.format(name=person.first_name, party=str(party), url=personal_url),
                 )
             except Exception as e:
                 logger.error(f"Error sending message to {person}: {e}")
-                models.MessageSent.objects.create(
-                    party=party, person=person, error=True, error_message=str(e)
-                )
+                models.MessageSent.objects.create(party=party, person=person, error=True, error_message=str(e))
                 continue
             if not twilio_message:
                 continue
@@ -78,14 +76,10 @@ def _get_recipients(
     filter_recipients: list[models.Person] | None = None,
 ) -> list[models.Person]:
     conditions = (
-        (Q(status__in=["Y", "M"]) | Q(status__isnull=True)) &
-        Q(person__preferences__whatsapp_notifications=True) & Q(person__phone_number__isnull=False)
+        (Q(status__in=["Y", "M"]) | Q(status__isnull=True))
+        & Q(person__preferences__whatsapp_notifications=True)
+        & Q(person__phone_number__isnull=False)
     )
     if filter_recipients:
         conditions &= Q(person__in=filter_recipients)
-    return [
-        invite.person
-        for invite in party.invite_set.filter(
-            conditions
-        ).prefetch_related('person')
-    ]
+    return [invite.person for invite in party.invite_set.filter(conditions).prefetch_related("person")]
