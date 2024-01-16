@@ -35,6 +35,7 @@ def create_party_default_messages(sender, instance: models.Party, created: bool,
         msg_instance.due_at = instance.date_and_time - delta
         msg_instance.send_threshold = send_threshold
         msg_instance.draft = False
+        msg_instance.autosend = True
         msg_instance.save()
 
 

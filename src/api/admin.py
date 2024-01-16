@@ -54,7 +54,7 @@ class ItemInline(admin.TabularInline):
 
 @admin.register(Message)
 class MessageAdmin(admin.ModelAdmin):
-    list_filter = ("party",)
+    list_filter = ("party", "autosend", "draft", )
     readonly_fields = ("id",)
 
 
