@@ -74,7 +74,7 @@ def admin_logic(request: HttpRequest) -> HttpResponse:
             messages.send_whatsapp_message(to=settings.MY_PHONE_NUMBER, body=f"Created {r} people")
         except Exception as e:
             logger.error(f"Error while handling vCard: {e}")
-            messages.send_whatsapp_message(to=settings.MY_PHONE_NUMBER, body=f"{e}")
+            messages.send_whatsapp_message(to=settings.MY_PHONE_NUMBER, body=f"Error while handling vCard: {e}")
 
         return HttpResponse("OK", status=200)
     return HttpResponse("OK", status=200)
