@@ -54,7 +54,9 @@ def send_due_messages(
                 )
             except Exception as e:
                 logger.error(f"Error sending message to {person}: {e}")
-                models.MessageSent.objects.create(party=party, person=person, error=True, error_message=str(e))
+                models.MessageSent.objects.create(
+                    party=party, person=person, error=True, error_message=str(e), sent_via="W"
+                )
                 continue
             if not twilio_message:
                 continue
