@@ -98,5 +98,7 @@ def handle_vcard(vcard: str) -> int:
                 data["email"] = line.split(":")[1].strip()
         if data:
             extracted_data.append(data)
-    people = [models.Person(**data) for data in extracted_data]
-    return len(models.Person.objects.bulk_create(people))
+    # note: bulk_create doesn't call save() so signals aren't triggered, so we have to go one by one
+    for data in extracted_data:
+        models.Person.objects.create(**data)
+    return len(extracted_data)

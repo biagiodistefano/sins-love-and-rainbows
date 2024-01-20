@@ -33,7 +33,7 @@ def send_due_messages(
         .exclude(Q(send_threshold__isnull=False) & Q(due_at__lt=current_time - F("send_threshold")))
         .order_by("due_at")
     )
-    recipents = _get_recipients(party)
+    recipents = _get_recipients(party, filter_recipients)
     for person in recipents:
         for message in messages:
             if (
