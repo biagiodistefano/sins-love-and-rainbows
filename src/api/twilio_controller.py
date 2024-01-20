@@ -99,6 +99,8 @@ def handle_vcard(vcard: str) -> int:
         if data:
             extracted_data.append(data)
     # note: bulk_create doesn't call save() so signals aren't triggered, so we have to go one by one
+    party = models.Party.get_next()
     for data in extracted_data:
-        models.Person.objects.create(**data)
+        person = models.Person.objects.create(**data)
+        models.Invite.objects.create(person=person, party=party, status=None)
     return len(extracted_data)
