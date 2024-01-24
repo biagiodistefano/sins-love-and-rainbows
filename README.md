@@ -12,17 +12,33 @@ From the admin panel, create the people and the parties, then invite them to the
 
 Add the people's numbers to their profile, you will see a link in the people's list that you can simply click to send them a message on whatsapp, with their personal link to the party.
 
-People do not need to login manually: the link contains a token that logs them in automatically.
+People do not need to login manually: the link contains a token that logs them in automatically (except if they are admins, in which case they have to login manually).
 Is this secure? No. But it's a party, so who cares, no one wants to create an account and login to come to your party.
+
+### Features
+
+- Create parties, decide whether they are public or private and how many people can attend.
+- Create people
+  * bonus: if you have twilio enabled, instead of having to add people manually to your database like a peasant, you can simply share their contact to your twilio whatsapp number and it will create the people for you. In this case, if there's an upcoming party, it will also send them an invitation message.
+- Invite people to parties:
+  * bonus: As soon as you create the invite, an invitation message is sent to the person via whatsapp (if you have twilio enabled).
+- Send messages to people via whatsapp (even automatically, see below) via a click of a button from the admin panel.
+- People can RSVP to parties and decide whether they want their name to be shown in the list of attendees
+- Every party has a shared task list that people can add tasks/items to and claim them. It also takes into account allergies and intolerances of the attendees.
+- Every party has a section with links to useful stuff.
+- There's a built-in link shortener that allows you to create short links to external websites.
+
+
+#### Automatic messages
 
 It also allows you to send messages to the people you invited automatically, using twilio. You can do this in two ways:
 
-### via the admin
+##### via the admin
 ```
 python manage.py send-messages
 ```
 
-### using the celery task
+##### using the celery task
 
 Go to your admin panel, go to periodic tasks, select `api.tasks.send_due_messages`.
 You can set the schedule there using the crontab syntax.
@@ -73,6 +89,8 @@ python manage.py bootstrap
 python manage.py runserver
 ```
 
+Note: static files are served via whitenoise, so you don't need to run `collectstatic`.
+
 ## Celery
 Have redis running, then, from the `src` directory:
 
@@ -87,3 +105,5 @@ Start the beat:
 ```bash
 celery -A sinsloveandrainbows beat -l info --scheduler django_celery_beat.schedulers:DatabaseScheduler
 ```
+
+Note: you want to deploy this properly either using docker or using systemd.
