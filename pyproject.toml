@@ -1,7 +1,7 @@
 [tool.poetry]
 name = "sins-love-and-rainbows"
 version = "0.1.0"
-description = ""
+description = "Personal party management app"
 authors = ["Biagio Distefano <biagiodistefano92@gmail.com>"]
 readme = "README.md"
 
