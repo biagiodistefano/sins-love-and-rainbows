@@ -84,7 +84,6 @@ python3.11 -m pip install poetry
 python3.11 -m poetry install
 source .venv/bin/activate
 cd src
-python manage.py migrate
 python manage.py bootstrap
 python manage.py runserver
 ```
