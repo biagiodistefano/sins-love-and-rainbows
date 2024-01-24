@@ -134,6 +134,6 @@ dmypy.json
 *.sqlite3
 /src/static
 /src/deployments.info
-/src/media/files
+/src/media/
 
 dump.rdb

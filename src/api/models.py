@@ -10,6 +10,8 @@ from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 from markdownfield.models import MarkdownField, RenderedMarkdownField
 from markdownfield.validators import VALIDATOR_STANDARD
+from django.contrib.sites.models import Site
+from django.shortcuts import reverse
 
 
 class PhoneNumberField(models.CharField):
@@ -60,7 +62,7 @@ class Person(AbstractUser):
 
     msg_template = (
         "Hi!\n\n"
-        "This is your *personal* link for our upcoming party!\n {link}\n\n"
+        "This is your *personal* link for our upcoming party!\n\n{link}\n\n"
         "Don't share this link with anyone else, it's only yours!"
     )
 
@@ -70,7 +72,9 @@ class Person(AbstractUser):
         party = Party.get_next()
         if not party or not self.is_invited_to(party):
             return None
-        link = f"https://sinsloveandrainbows.eu/party/{party.edition}?visitor_id={str(self.id)}"
+        link = f"https://{Site.objects.get_current().domain}" + reverse("party", args=[party.edition])
+        query_params = {"visitor_id": str(self.id)}
+        link += f"?{urllib.parse.urlencode(query_params)}"
         msg = self.msg_template.format(link=link)
         urlencoded_msg = urllib.parse.quote(msg)
         return f"https://wa.me/{self.phone_number[1:]}?text={urlencoded_msg}"
