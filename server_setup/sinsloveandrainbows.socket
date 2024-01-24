@@ -1,9 +1,0 @@
-#/etc/systemd/system/sinsloveandrainbows.socket
-[Unit]
-Description=gunicorn socket for slr
-
-[Socket]
-ListenStream=/run/sinsloveandrainbows.sock
-
-[Install]
-WantedBy=sockets.target
