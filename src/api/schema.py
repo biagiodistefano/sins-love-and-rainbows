@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timedelta
 
 from ninja.schema import Schema
 from pydantic import Field, UUID4, field_validator
@@ -81,15 +81,18 @@ class ExternalLinkSchemaUpdate(Schema):
 
 
 class MessageSchemaCreate(Schema):
-    text: str = Field(..., min_length=2, max_length=250)
+    title: str | None = Field(None, min_length=2, max_length=30)
+    text: str = Field(..., min_length=2)
+    due_at: datetime | None = None
+    send_threshold: timedelta | None = None
+    draft: bool = True
+    autosend: bool = False
 
 
 class MessageSchema(MessageSchemaCreate):
     id: int
     party_edition: str
     text_rendered: str
-    sent_at: datetime | None
-    sent_stats: str | None
 
 
 class ItemSchemaCreate(Schema):

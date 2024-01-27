@@ -8,7 +8,7 @@ from ninja.files import UploadedFile
 from ninja.schema import Schema
 from ninja_extra import api_controller, route
 
-from . import models, schema
+from . import models, schema, tasks
 from .auth import AUTH
 
 
@@ -79,7 +79,7 @@ class SLRController:  # type: ignore
     def send_message(self, request: HttpRequest, edition: str, message_id: int, include_declined: bool = True):
         party = get_object_or_404(models.Party, edition=edition)
         if message := party.message_set.filter(id=message_id).first():
-            message.send(include_declined=include_declined)
+            tasks.send_due_messages.delay(party=party, filter_messages=[message])
             return 202, message
         raise Http404
 

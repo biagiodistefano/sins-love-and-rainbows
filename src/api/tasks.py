@@ -21,6 +21,7 @@ def send_due_messages(
     refresh: float = 5.0,
     force: bool = False,
     filter_recipients: list[models.Person] | None = None,
+    filter_messages: list[models.Message] | None = None,
 ) -> None:
     if party is None:
         party = models.Party.get_next()
@@ -33,6 +34,8 @@ def send_due_messages(
         .exclude(Q(send_threshold__isnull=False) & Q(due_at__lt=current_time - F("send_threshold")))
         .order_by("due_at")
     )
+    if filter_messages:
+        messages = messages.filter(pk__in=[msg.pk for msg in filter_messages])
     recipents = _get_recipients(party, filter_recipients)
     for person in recipents:
         for message in messages:
