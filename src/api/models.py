@@ -330,10 +330,18 @@ class MessageBase(models.Model):
         abstract = True
 
 
+def _default_variables() -> dict[str, str]:
+    return {
+        "party": "Sins, Love and Rainbows: Super Cool Edition",
+        "url": "https://example.com/?visitor_id=1234",
+        "name": "John",
+    }
+
+
 class MessageTemplate(MessageBase):
     friendly_name = models.CharField(max_length=64, db_index=True, unique=True)
     language = models.CharField(max_length=5, db_index=True)
-    variables = models.JSONField(default=dict, blank=True, null=True)
+    variables = models.JSONField(default=_default_variables, blank=True, null=True)
     sid = models.CharField(max_length=34, null=True, blank=True, editable=False)
     status = models.CharField(
         max_length=25,
