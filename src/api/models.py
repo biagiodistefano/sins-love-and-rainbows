@@ -322,8 +322,7 @@ class Allergy(models.Model):
 class MessageBase(models.Model):
     title = models.CharField(max_length=30, db_index=True, null=True, blank=True)
     text = models.TextField(db_index=True, null=True, blank=True)
-    due_at = models.DateTimeField(db_index=True, null=True, blank=True)
-    send_threshold = models.DurationField(null=True, blank=True)
+    send_threshold = models.DurationField(null=True, blank=True)  # how long after the due_at to still send the message
     draft = models.BooleanField(default=True, db_index=True)
     autosend = models.BooleanField(default=False, db_index=True)
 
@@ -349,6 +348,7 @@ class MessageTemplate(MessageBase):
         ),
         default="NOT_SUBMITTED",
     )
+    send_delta = models.DurationField(null=True, blank=True)  # how long before the party to send the message
     rejection_reason = models.TextField(null=True, blank=True)
     is_default_party_message = models.BooleanField(default=False, db_index=True)
     category = models.CharField(
@@ -451,7 +451,7 @@ class MessageTemplate(MessageBase):
         MessageTemplate.objects.filter(pk=self.pk).update(status="PENDING")  # update without signals
         return r
 
-    def fetch_approval(self) -> requests.Response:
+    def update_status(self) -> requests.Response:
         r = requests.get(self.approval_fetch_url, auth=self.AUTH)
         r.raise_for_status()
         status = r.json()["whatsapp"]["status"].upper()
@@ -466,6 +466,7 @@ class Message(MessageBase):
     party = models.ForeignKey(Party, on_delete=models.CASCADE)
     text = MarkdownField(rendered_field="text_rendered", validator=VALIDATOR_STANDARD, default="", blank=True)
     text_rendered = RenderedMarkdownField()
+    due_at = models.DateTimeField(db_index=True, null=True, blank=True)
 
     class Meta:
         ordering = ["-party__date_and_time", "-due_at"]

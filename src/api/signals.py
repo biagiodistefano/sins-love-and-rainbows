@@ -2,7 +2,6 @@ from django.db.models.signals import post_save
 from django.dispatch import receiver
 
 from . import models
-from .messages import TEMPLATES
 from . import tasks
 import logging
 
@@ -31,15 +30,16 @@ def create_invite(sender, instance: models.Party, created: bool, **kwargs):
 
 @receiver(post_save, sender=models.Party)
 def create_party_default_messages(sender, instance: models.Party, created: bool, **kwargs):
-    for title, (message, delta, send_threshold) in TEMPLATES.items():
-        msg_instance, created = models.Message.objects.get_or_create(party=instance, title=title)
+    for message_template in models.MessageTemplate.objects.filter(is_default_party_message=True):
+        msg_instance, created = models.Message.objects.get_or_create(party=instance, title=message_template.title)
         if not created:
             continue
-        msg_instance.text = message
-        msg_instance.due_at = instance.date_and_time - delta
-        msg_instance.send_threshold = send_threshold
-        msg_instance.draft = False
-        msg_instance.autosend = True
+        msg_instance.text = message_template.text
+        if message_template.send_delta is not None:
+            msg_instance.due_at = instance.date_and_time - message_template.send_delta
+        msg_instance.send_threshold = message_template.send_threshold
+        msg_instance.draft = message_template.draft
+        msg_instance.autosend = message_template.autosend
         msg_instance.save()
 
 

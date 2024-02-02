@@ -70,7 +70,8 @@ class MessageAdmin(admin.ModelAdmin):
     )
     readonly_fields = ("id",)
     list_display = (
-        "__str__",
+        "title",
+        "party",
         "due_at",
     )
 
@@ -105,6 +106,10 @@ class MessageSentAdmin(admin.ModelAdmin):
         "person",
     )
     readonly_fields = ("sent_at",)
+    list_display = ("party", "title", "person", "status", "sent_at")
+
+    def title(self, obj: MessageSent) -> str:
+        return obj.message.title
 
 
 @admin.register(Party)
