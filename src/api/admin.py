@@ -60,6 +60,12 @@ class MessageTemplateAdmin(admin.ModelAdmin):
         "rejection_reason",
     )
 
+    list_display = (
+        "title",
+        "status",
+        "is_default_party_message",
+    )
+
 
 @admin.register(Message)
 class MessageAdmin(admin.ModelAdmin):

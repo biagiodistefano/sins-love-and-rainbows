@@ -340,7 +340,7 @@ def _default_variables() -> dict[str, str]:
 
 class MessageTemplate(MessageBase):
     friendly_name = models.CharField(max_length=64, db_index=True, unique=True)
-    language = models.CharField(max_length=5, db_index=True)
+    language = models.CharField(max_length=5, db_index=True, default="en")
     variables = models.JSONField(default=_default_variables, blank=True, null=True)
     sid = models.CharField(max_length=34, null=True, blank=True, editable=False)
     status = models.CharField(
