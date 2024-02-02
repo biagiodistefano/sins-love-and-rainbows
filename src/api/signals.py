@@ -52,6 +52,8 @@ def create_preferences(sender, instance: models.Person, created: bool, **kwargs)
 @receiver(post_save, sender=models.MessageTemplate)
 def create_template_message(sender, instance: models.MessageTemplate, created: bool, **kwargs):
     try:
+        if instance.draft:
+            return
         tasks.submit_new_template(instance)
     except Exception as e:
         print(f"Error submitting template: {e}")
