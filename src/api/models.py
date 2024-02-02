@@ -403,14 +403,14 @@ class MessageTemplate(MessageBase):
             },
         }
 
-    def cleaned_text(self) -> str:
+    def cleaned_text(self, variables: dict | None = None) -> str:
         text = self.text
         placeholder_counter = 1
         keyword_occurrences = {}
 
         while True:
             found = False
-            for keyword in self.variables.keys():
+            for keyword in (variables or self.variables).keys():
                 if f"{{{keyword}}}" in text:
                     found = True
                     text = text.replace(f"{{{keyword}}}", f"{{{{{placeholder_counter}}}}}", 1)
@@ -421,19 +421,19 @@ class MessageTemplate(MessageBase):
 
         return text
 
-    def cleaned_variables(self) -> dict[str, str]:
-        keyword_occurrences = self._generate_keyword_occurrences()
-        new_variables = {str(k): self.variables[v] for k, v in keyword_occurrences.items()}
+    def cleaned_variables(self, variables: dict | None = None) -> dict[str, str]:
+        keyword_occurrences = self._generate_keyword_occurrences(variables)
+        new_variables = {str(k): (variables or self.variables)[v] for k, v in keyword_occurrences.items()}
         return new_variables
 
-    def _generate_keyword_occurrences(self) -> dict[int, str]:
+    def _generate_keyword_occurrences(self, variables: dict | None = None) -> dict[int, str]:
         text = self.text  # Assuming self.body contains the template text
         placeholder_counter = 1
         keyword_occurrences = {}
 
         while True:
             found = False
-            for keyword in self.variables.keys():
+            for keyword in (variables or self.variables).keys():
                 if f"{{{keyword}}}" in text:
                     found = True
                     text = text.replace(f"{{{keyword}}}", "", 1)
@@ -472,6 +472,7 @@ class MessageTemplate(MessageBase):
 
 class Message(MessageBase):
     party = models.ForeignKey(Party, on_delete=models.CASCADE)
+    template = models.ForeignKey(MessageTemplate, on_delete=models.SET_NULL, null=True, blank=True)
     text = MarkdownField(rendered_field="text_rendered", validator=VALIDATOR_STANDARD, default="", blank=True)
     text_rendered = RenderedMarkdownField()
     due_at = models.DateTimeField(db_index=True, null=True, blank=True)

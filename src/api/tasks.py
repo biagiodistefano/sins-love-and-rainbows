@@ -34,6 +34,7 @@ def send_due_messages(
         models.Message.objects.filter(party=party, due_at__lte=current_time, draft=False, autosend=True)
         .exclude(Q(send_threshold__isnull=False) & Q(due_at__lt=current_time - F("send_threshold")))
         .order_by("due_at")
+        .prefetch_related("template")
     )
     if filter_messages:
         messages = messages.filter(pk__in=[msg.pk for msg in filter_messages])
@@ -52,9 +53,14 @@ def send_due_messages(
                 print(f"[DRY] {log_msg}")
                 continue
             try:
+                variables = dict(name=person.first_name, party=str(party), url=personal_url)
                 twilio_message = send_whatsapp_message(
                     to=person.phone_number,
-                    body=message.text.format(name=person.first_name, party=str(party), url=personal_url),
+                    body=message.template.cleaned_text(variables=variables)
+                    if message.template
+                    else message.text.format(**variables),  # noqa: E501
+                    content_sid=message.template.sid if message.template else None,
+                    variables=message.template.cleaned_variables(variables) if message.template else None,
                 )
             except Exception as e:
                 logger.error(f"Error sending message to {person}: {e}")
@@ -92,8 +98,10 @@ def _get_recipients(
 
 
 @shared_task
-def send_whatsapp_message(to: str, body: str) -> MessageInstance | None:
-    return _send_whatsapp_message(to, body)
+def send_whatsapp_message(
+    to: str, body: str, content_sid: None | str = None, variables: dict | None = None
+) -> MessageInstance | None:
+    return _send_whatsapp_message(to, body, content_sid, variables)
 
 
 @shared_task

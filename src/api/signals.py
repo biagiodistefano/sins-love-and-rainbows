@@ -31,16 +31,20 @@ def create_invite(sender, instance: models.Party, created: bool, **kwargs):
 @receiver(post_save, sender=models.Party)
 def create_party_default_messages(sender, instance: models.Party, created: bool, **kwargs):
     for message_template in models.MessageTemplate.objects.filter(is_default_party_message=True):
-        msg_instance, created = models.Message.objects.get_or_create(party=instance, title=message_template.title)
-        if not created:
-            continue
-        msg_instance.text = message_template.text
-        if message_template.send_delta is not None:
-            msg_instance.due_at = instance.date_and_time - message_template.send_delta
-        msg_instance.send_threshold = message_template.send_threshold
-        msg_instance.draft = message_template.draft
-        msg_instance.autosend = message_template.autosend
-        msg_instance.save()
+        models.Message.objects.get_or_create(party=instance, template=message_template)
+
+
+@receiver(post_save, sender=models.Message)
+def autofill_message_from_template(sender, instance: models.Message, created: bool, **kwargs):
+    if created and instance.template:
+        instance.title = instance.template.title
+        instance.text = instance.template.text
+        instance.send_threshold = instance.template.send_threshold
+        instance.draft = instance.template.draft
+        instance.autosend = instance.template.autosend
+        if instance.template.send_delta is not None:
+            instance.due_at = instance.party.date_and_time - instance.template.send_delta
+        instance.save()
 
 
 @receiver(post_save, sender=models.Person)
