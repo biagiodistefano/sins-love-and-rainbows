@@ -3,13 +3,17 @@ from django.dispatch import receiver
 
 from . import models
 from .messages import TEMPLATES
-from .tasks import send_due_messages
+from . import tasks
+import logging
+
+
+logger = logging.getLogger("twilio_whatsapp")
 
 
 @receiver(post_save, sender=models.Invite)
 def send_messages_on_invite_create(sender, instance: models.Invite, created: bool, **kwargs):
     if created:
-        send_due_messages.delay(party=instance.party, dry=False, filter_recipients=[instance.person])
+        tasks.send_due_messages.delay(party=instance.party, dry=False, filter_recipients=[instance.person])
 
 
 @receiver(post_save, sender=models.Party)
@@ -43,3 +47,11 @@ def create_party_default_messages(sender, instance: models.Party, created: bool,
 def create_preferences(sender, instance: models.Person, created: bool, **kwargs):
     if created:
         models.Preferences.objects.create(person=instance)
+
+
+@receiver(post_save, sender=models.MessageTemplate)
+def create_template_message(sender, instance: models.MessageTemplate, created: bool, **kwargs):
+    try:
+        tasks.submit_new_template(instance)
+    except Exception as e:
+        print(f"Error submitting template: {e}")

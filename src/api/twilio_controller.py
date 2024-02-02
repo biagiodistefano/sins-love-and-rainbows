@@ -6,7 +6,7 @@ from ninja_extra import api_controller, route
 import requests
 
 
-from . import messages, models, settings
+from . import messages, models, settings, tasks
 from .auth import TwilioAuth
 
 logger = logging.getLogger("twilio_whatsapp")
@@ -26,7 +26,9 @@ class TwilioController:  # type: ignore
         if message.error:
             message.error_message = message_error
         message.save()
-
+        if message.status in ("undelivered", "failed"):
+            logger.error(f"{message}")
+            tasks.send_whatsapp_message.delay(settings.MY_PHONE_NUMBER, f"{message}")
         return HttpResponse("OK", status=200)
 
     @route.post("/inbound", url_name="twilio_inbound")

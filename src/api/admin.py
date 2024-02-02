@@ -5,7 +5,7 @@ from django.contrib import admin
 from django.urls import reverse
 from django.utils.html import format_html
 
-from .models import Allergy, Invite, Item, Message, MessageSent, Party, PartyFile, Person
+from .models import Allergy, Invite, Item, Message, MessageSent, MessageTemplate, Party, PartyFile, Person
 
 
 # from django import forms
@@ -50,6 +50,15 @@ class ItemInline(admin.TabularInline):
     model = Item
     classes = ["collapse"]
     fields = ("category", "name", "quantity", "description", "ingredients", "assigned_to")
+
+
+@admin.register(MessageTemplate)
+class MessageTemplateAdmin(admin.ModelAdmin):
+    readonly_fields = (
+        "status",
+        "sid",
+        "rejection_reason",
+    )
 
 
 @admin.register(Message)

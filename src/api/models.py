@@ -3,15 +3,19 @@ import urllib.parse
 import uuid
 from typing import Any, Optional
 
+import requests
 from django.contrib.auth.models import AbstractUser
+from django.contrib.sites.models import Site
 from django.core.exceptions import ValidationError
 from django.db import models
+from django.shortcuts import reverse
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 from markdownfield.models import MarkdownField, RenderedMarkdownField
 from markdownfield.validators import VALIDATOR_STANDARD
-from django.contrib.sites.models import Site
-from django.shortcuts import reverse
+from requests.auth import HTTPBasicAuth
+
+from . import settings
 
 
 class PhoneNumberField(models.CharField):
@@ -315,15 +319,153 @@ class Allergy(models.Model):
         verbose_name_plural = "allergies"
 
 
-class Message(models.Model):
-    party = models.ForeignKey(Party, on_delete=models.CASCADE)
+class MessageBase(models.Model):
     title = models.CharField(max_length=30, db_index=True, null=True, blank=True)
-    text = MarkdownField(rendered_field="text_rendered", validator=VALIDATOR_STANDARD, default="", blank=True)
-    text_rendered = RenderedMarkdownField()
+    text = models.TextField(db_index=True, null=True, blank=True)
     due_at = models.DateTimeField(db_index=True, null=True, blank=True)
     send_threshold = models.DurationField(null=True, blank=True)
     draft = models.BooleanField(default=True, db_index=True)
     autosend = models.BooleanField(default=False, db_index=True)
+
+    class Meta:
+        abstract = True
+
+
+class MessageTemplate(MessageBase):
+    friendly_name = models.CharField(max_length=64, db_index=True, unique=True)
+    language = models.CharField(max_length=5, db_index=True)
+    variables = models.JSONField(default=dict, blank=True, null=True)
+    sid = models.CharField(max_length=34, null=True, blank=True, editable=False)
+    status = models.CharField(
+        max_length=25,
+        db_index=True,
+        null=True,
+        blank=True,
+        choices=(
+            ("NOT_SUBMITTED", "NOT_SUBMITTED"),
+            ("APPROVED", "APPROVED"),
+            ("PENDING", "PENDING"),
+            ("REJECTED", "REJECTED"),
+        ),
+        default="NOT_SUBMITTED",
+    )
+    rejection_reason = models.TextField(null=True, blank=True)
+    is_default_party_message = models.BooleanField(default=False, db_index=True)
+    category = models.CharField(
+        max_length=30,
+        db_index=True,
+        null=True,
+        blank=True,
+        choices=(
+            ("UTILITY", "UTILITY"),
+            ("MARKETING", "MARKETING"),
+            ("AUTHENTICATION", "AUTHENTICATION"),
+        ),
+        default="UTILITY",
+    )
+    CONTENT_URL = "https://content.twilio.com/v1/Content"
+    APPROVAL_FETCH_URL = CONTENT_URL + "/{sid}/ApprovalRequests"
+    APPROVAL_CREATE_URL = APPROVAL_FETCH_URL + "/whatsapp"
+    AUTH = HTTPBasicAuth(settings.TWILIO_ACCOUNT_SID, settings.TWILIO_AUTH_TOKEN)
+
+    def __str__(self):
+        return self.friendly_name
+
+    @property
+    def approval_fetch_url(self) -> str:
+        if not self.sid:
+            raise ValueError("This message template has not been submitted to Twilio")
+        return self.APPROVAL_FETCH_URL.format(sid=self.sid)
+
+    @property
+    def approval_create_url(self) -> str:
+        if not self.sid:
+            raise ValueError("This message template has not been submitted to Twilio")
+        return self.APPROVAL_CREATE_URL.format(sid=self.sid)
+
+    def to_twilio_json(self) -> dict:
+        return {
+            "friendly_name": self.friendly_name,
+            "language": self.language,
+            "variables": self.cleaned_variables(),
+            "types": {
+                "twilio/text": {
+                    "body": self.cleaned_text(),
+                }
+            },
+        }
+
+    def cleaned_text(self) -> str:
+        text = self.text
+        placeholder_counter = 1
+        keyword_occurrences = {}
+
+        while True:
+            found = False
+            for keyword in self.variables.keys():
+                if f"{{{keyword}}}" in text:
+                    found = True
+                    text = text.replace(f"{{{keyword}}}", f"{{{{{placeholder_counter}}}}}", 1)
+                    keyword_occurrences[placeholder_counter] = keyword
+                    placeholder_counter += 1
+            if not found:
+                break
+
+        return text
+
+    def cleaned_variables(self) -> dict[str, str]:
+        keyword_occurrences = self._generate_keyword_occurrences()
+        new_variables = {str(k): self.variables[v] for k, v in keyword_occurrences.items()}
+        return new_variables
+
+    def _generate_keyword_occurrences(self) -> dict[int, str]:
+        text = self.text  # Assuming self.body contains the template text
+        placeholder_counter = 1
+        keyword_occurrences = {}
+
+        while True:
+            found = False
+            for keyword in self.variables.keys():
+                if f"{{{keyword}}}" in text:
+                    found = True
+                    text = text.replace(f"{{{keyword}}}", "", 1)
+                    keyword_occurrences[placeholder_counter] = keyword
+                    placeholder_counter += 1
+            if not found:
+                break
+
+        return keyword_occurrences
+
+    def submit(self) -> requests.Response:
+        r = requests.post(self.CONTENT_URL, auth=self.AUTH, json=self.to_twilio_json())
+        r.raise_for_status()
+        sid = r.json()["sid"]
+        MessageTemplate.objects.filter(pk=self.pk).update(sid=sid)  # update without signals
+        return sid
+
+    def request_approval(self) -> requests.Response:
+        r = requests.post(
+            self.approval_create_url, auth=self.AUTH, json={"name": self.friendly_name, "category": self.category}
+        )
+        r.raise_for_status()
+        MessageTemplate.objects.filter(pk=self.pk).update(status="PENDING")  # update without signals
+        return r
+
+    def fetch_approval(self) -> requests.Response:
+        r = requests.get(self.approval_fetch_url, auth=self.AUTH)
+        r.raise_for_status()
+        status = r.json()["whatsapp"]["status"].upper()
+        rejection_reason = r.json()["whatsapp"]["rejection_reason"]
+        MessageTemplate.objects.filter(pk=self.pk).update(
+            status=status, rejection_reason=rejection_reason
+        )  # update without signals  # noqa: E501
+        return r
+
+
+class Message(MessageBase):
+    party = models.ForeignKey(Party, on_delete=models.CASCADE)
+    text = MarkdownField(rendered_field="text_rendered", validator=VALIDATOR_STANDARD, default="", blank=True)
+    text_rendered = RenderedMarkdownField()
 
     class Meta:
         ordering = ["-party__date_and_time", "-due_at"]

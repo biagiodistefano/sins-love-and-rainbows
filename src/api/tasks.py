@@ -6,9 +6,10 @@ from django.contrib.sites.models import Site
 from django.db.models import F, Q
 from django.shortcuts import reverse
 from django.utils import timezone
+from twilio.rest.api.v2010.account.message import MessageInstance
 
 from . import models
-from .messages import send_whatsapp_message
+from .messages import send_whatsapp_message as _send_whatsapp_message
 
 logger = logging.getLogger("twilio_whatsapp")
 
@@ -63,10 +64,10 @@ def send_due_messages(
                 continue
             if not twilio_message:
                 continue
-            msg_sent = models.MessageSent.objects.create(
-                message=message, party=party, person=person, sent=True, sid=twilio_message.sid
-            )
-            sent.append(msg_sent)
+            # msg_sent = models.MessageSent.objects.create(
+            #     message=message, party=party, person=person, sent=True, sid=twilio_message.sid
+            # )
+            # sent.append(msg_sent)
             logger.info(log_msg)
     if wait and sent:
         print("Refreshing statuses...")
@@ -88,3 +89,24 @@ def _get_recipients(
     if filter_recipients:
         conditions &= Q(person__in=filter_recipients)
     return [invite.person for invite in party.invite_set.filter(conditions).prefetch_related("person")]
+
+
+@shared_task
+def send_whatsapp_message(to: str, body: str) -> MessageInstance | None:
+    return _send_whatsapp_message(to, body)
+
+
+@shared_task
+def submit_new_template(template: models.MessageTemplate) -> None:
+    template.submit()
+    logger.info(f"Submitted new template: {template}")
+    template.refresh_from_db()
+    template.request_approval()
+    logger.info(f"Requested approval for new template: {template}")
+
+
+@shared_task
+def update_approval_statuses() -> None:
+    for template in models.MessageTemplate.objects.filter(status="PENDING"):
+        template.update_status()
+        logger.info(f"Updated status for template: {template}")
