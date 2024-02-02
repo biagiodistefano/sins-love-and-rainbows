@@ -64,10 +64,10 @@ def send_due_messages(
                 continue
             if not twilio_message:
                 continue
-            # msg_sent = models.MessageSent.objects.create(
-            #     message=message, party=party, person=person, sent=True, sid=twilio_message.sid
-            # )
-            # sent.append(msg_sent)
+            msg_sent = models.MessageSent.objects.create(
+                message=message, party=party, person=person, sent=True, sid=twilio_message.sid
+            )
+            sent.append(msg_sent)
             logger.info(log_msg)
     if wait and sent:
         print("Refreshing statuses...")
