@@ -77,9 +77,15 @@ class MessageAdmin(admin.ModelAdmin):
     readonly_fields = ("id",)
     list_display = (
         "title",
-        "party",
+        "link_to_party",
         "due_at",
     )
+
+    def link_to_party(self, obj: Message) -> str:
+        url = reverse("admin:api_party_change", args=[obj.party.id])
+        return format_html('<a href="{}">{}</a>', url, obj.party.name)
+
+    link_to_party.short_description = "Party"
 
 
 @admin.register(Invite)
@@ -89,6 +95,25 @@ class InviteAdmin(admin.ModelAdmin):
         "status",
     )
     readonly_fields = ("id",)
+
+    list_display = (
+        "__str__",
+        "link_to_party",
+        "link_to_person",
+        "status",
+    )
+
+    def link_to_party(self, obj: Invite) -> str:
+        url = reverse("admin:api_party_change", args=[obj.party.id])
+        return format_html('<a href="{}">{}</a>', url, obj.party.name)
+
+    link_to_party.short_description = "Party"
+
+    def link_to_person(self, obj: Invite) -> str:
+        url = reverse("admin:api_person_change", args=[obj.person.id])
+        return format_html('<a href="{}">{}</a>', url, obj.person.first_name)
+
+    link_to_person.short_description = "Person"
 
 
 @admin.register(Item)
@@ -112,7 +137,19 @@ class MessageSentAdmin(admin.ModelAdmin):
         "person",
     )
     readonly_fields = ("sent_at",)
-    list_display = ("party", "title", "person", "status", "sent_at")
+    list_display = ("title", "link_to_party", "link_to_person", "status", "sent_at")
+
+    def link_to_party(self, obj: MessageSent) -> str:
+        url = reverse("admin:api_party_change", args=[obj.party.id])
+        return format_html('<a href="{}">{}</a>', url, obj.party.name)
+
+    link_to_party.short_description = "Party"
+
+    def link_to_person(self, obj: MessageSent) -> str:
+        url = reverse("admin:api_person_change", args=[obj.person.id])
+        return format_html('<a href="{}">{}</a>', url, obj.person.first_name)
+
+    link_to_person.short_description = "Person"
 
     def title(self, obj: MessageSent) -> str:
         return obj.message.title

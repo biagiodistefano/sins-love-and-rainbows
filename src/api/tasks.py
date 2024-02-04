@@ -39,13 +39,16 @@ def send_due_messages(
     if filter_messages:
         messages = messages.filter(pk__in=[msg.pk for msg in filter_messages])
     recipents = _get_recipients(party, filter_recipients)
-    for person in recipents:
+    for person, rsvp in recipents:
         for message in messages:
             if (
                 msg := models.MessageSent.objects.filter(message=message, party=party, person=person, sent=True).first()
             ) and not force:
                 sent.append(msg)
                 logger.info(f"Skipping {person}: Already sent (status: {msg.status})")
+                continue
+            if message.title != "Invitation" and rsvp is None and (party.date_and_time - current_time).days < 7:
+                logger.info(f"Skipping {person}: Has not RSVP'd and event is less than 6 days away")
                 continue
             personal_url = f"{party_url}?visitor_id={str(person.pk)}"
             log_msg = f"{party}: Sending {message.title} to {person} ({person.phone_number})"
@@ -86,7 +89,7 @@ def send_due_messages(
 def _get_recipients(
     party: models.Party,
     filter_recipients: list[models.Person] | None = None,
-) -> list[models.Person]:
+) -> list[tuple[models.Person, str | None]]:
     conditions = (
         (Q(status__in=["Y", "M"]) | Q(status__isnull=True))
         & Q(person__preferences__whatsapp_notifications=True)
@@ -94,7 +97,7 @@ def _get_recipients(
     )
     if filter_recipients:
         conditions &= Q(person__in=filter_recipients)
-    return [invite.person for invite in party.invite_set.filter(conditions).prefetch_related("person")]
+    return [(invite.person, invite.status) for invite in party.invite_set.filter(conditions).prefetch_related("person")]
 
 
 @shared_task

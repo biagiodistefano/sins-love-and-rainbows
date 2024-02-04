@@ -288,7 +288,7 @@ class Invite(models.Model):
         return self.party.edition
 
     def __str__(self):
-        return f"{self.person} @ {self.party}: {self.status}"
+        return f"{self.person} @ {self.party.edition}: {self.status}"
 
     class Meta:
         unique_together = ("person", "party")
@@ -296,7 +296,7 @@ class Invite(models.Model):
         indexes = [
             models.Index(fields=["person", "party"]),
         ]
-        ordering = ["-status", "person__first_name", "person__last_name"]
+        ordering = ["-party__date_and_time", "person__first_name", "person__last_name", "-status"]
 
 
 class Ingredient(models.Model):
