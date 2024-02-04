@@ -1,4 +1,4 @@
-from django.db.models.signals import post_save
+from django.db.models.signals import post_save, pre_save
 from django.dispatch import receiver
 
 from . import models
@@ -53,11 +53,12 @@ def create_preferences(sender, instance: models.Person, created: bool, **kwargs)
         models.Preferences.objects.create(person=instance)
 
 
-@receiver(post_save, sender=models.MessageTemplate)
-def create_template_message(sender, instance: models.MessageTemplate, created: bool, **kwargs):
+@receiver(pre_save, sender=models.MessageTemplate)
+def create_template_message(sender, instance: models.MessageTemplate, **kwargs):
     try:
         if instance.draft:
             return
-        tasks.submit_new_template(instance)
+        if instance._original_text != instance.text:
+            tasks.submit_new_template(instance)
     except Exception as e:
         print(f"Error submitting template: {e}")

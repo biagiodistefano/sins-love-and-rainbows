@@ -339,6 +339,10 @@ def _default_variables() -> dict[str, str]:
 
 
 class MessageTemplate(MessageBase):
+    def __init__(self, *args, **kwargs) -> None:
+        super().__init__(*args, **kwargs)
+        self._original_text = self.text
+
     friendly_name = models.CharField(max_length=64, db_index=True, unique=True)
     language = models.CharField(max_length=5, db_index=True, default="en")
     variables = models.JSONField(default=_default_variables, blank=True, null=True)
