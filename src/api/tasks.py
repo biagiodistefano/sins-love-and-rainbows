@@ -42,7 +42,9 @@ def send_due_messages(
     for person, rsvp in recipents:
         for message in messages:
             if (
-                msg := models.MessageSent.objects.filter(message=message, party=party, person=person, sent=True).first()
+                msg := models.MessageSent.objects.filter(
+                    message__title=message.title, party=party, person=person, sent=True
+                ).first()
             ) and not force:
                 sent.append(msg)
                 logger.info(f"Skipping {person}: Already sent (status: {msg.status})")
