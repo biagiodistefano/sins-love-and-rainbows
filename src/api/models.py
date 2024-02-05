@@ -484,6 +484,7 @@ class Message(MessageBase):
     class Meta:
         ordering = ["-party__date_and_time", "-due_at"]
         index_together = [("party", "due_at", "draft", "autosend")]
+        unique_together = [("party", "title")]
 
     @property
     def party_edition(self) -> str:
