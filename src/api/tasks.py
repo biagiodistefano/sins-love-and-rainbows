@@ -47,13 +47,13 @@ def send_due_messages(
                 ).first()
             ) and not force:
                 sent.append(msg)
-                logger.info(f"Skipping {person}: Already sent (status: {msg.status})")
+                logger.info(f"[{message}] Skipping {person}: Already sent (status: {msg.status})")
                 continue
             if message.title != "Invitation" and rsvp is None and (party.date_and_time - current_time).days < 7:
-                logger.info(f"Skipping {person}: Has not RSVP'd and event is less than 6 days away")
+                logger.info(f"[{message}] Skipping {person}: Has not RSVP'd and event is less than 6 days away")
                 continue
             personal_url = f"{party_url}?visitor_id={str(person.pk)}"
-            log_msg = f"{party}: Sending {message.title} to {person} ({person.phone_number})"
+            log_msg = f"[{message}] Sending to {person} ({person.phone_number})"
             if dry:
                 print(f"[DRY] {log_msg}")
                 continue
@@ -68,7 +68,7 @@ def send_due_messages(
                     variables=message.template.cleaned_variables(variables) if message.template else None,
                 )
             except Exception as e:
-                logger.error(f"Error sending message to {person}: {e}")
+                logger.error(f"[{message}] Error sending message to {person}: {e}")
                 models.MessageSent.objects.create(
                     party=party, person=person, error=True, error_message=str(e), sent_via="W"
                 )
