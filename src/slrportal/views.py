@@ -86,7 +86,7 @@ def claim_item(request: HttpRequest, item_id: str, person_id: str) -> HttpRespon
         return HttpResponseBadRequest("Not attending")
     task.assigned_to.add(person)
     task.save()
-    notifications.notify_admins_of_item_change(task, person, "claimed")
+    notifications.notify_admins_of_item_change.delay(task, person, "claimed")
     url = reverse("party", kwargs={"edition": task.party.edition})
     return redirect(url)
 
@@ -102,7 +102,7 @@ def unclaim_item(request: HttpRequest, item_id: str, person_id: str) -> HttpResp
         return HttpResponseBadRequest("You can only unassign items from yourself")
     task.assigned_to.remove(person)
     task.save()
-    notifications.notify_admins_of_item_change(task, person, "unclaimed")
+    notifications.notify_admins_of_item_change.delay(task, person, "unclaimed")
     url = reverse("party", kwargs={"edition": task.party.edition})
     return redirect(url)
 
@@ -133,7 +133,7 @@ def create_item(request: HttpRequest, edition: str) -> HttpResponse:
         action += " and claimed"
     item.created_by = person
     item.save()
-    notifications.notify_admins_of_item_change(item, person, action)
+    notifications.notify_admins_of_item_change.delay(item, person, action)
     return redirect(url)
 
 
@@ -144,7 +144,7 @@ def delete_item(request: HttpRequest, item_id: str) -> HttpResponse:
     if request.user != item.created_by and not request.user.is_superuser:
         return HttpResponseForbidden("You can only delete items you created")
     item.delete()
-    notifications.notify_admins_of_item_change(item, request.user, "deleted")  # type: ignore
+    notifications.notify_admins_of_item_change.delay(item, request.user, "deleted")  # type: ignore
     url = reverse("party", kwargs={"edition": item.party.edition})
     return redirect(url)
 
@@ -186,7 +186,7 @@ def update_rsvp(request: HttpRequest, edition: str) -> HttpResponse:
                 item.save()
     url = reverse("party", kwargs={"edition": party.edition})
     if old_status != invite.status:
-        notifications.notify_admins_of_rsvp_change(person, party, invite)
+        notifications.notify_admins_of_rsvp_change.delay(person, party, invite)
     return redirect(url)
 
 
