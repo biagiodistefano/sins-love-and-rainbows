@@ -31,7 +31,8 @@ def create_invite(sender, instance: models.Party, created: bool, **kwargs):
 @receiver(post_save, sender=models.Party)
 def create_party_default_messages(sender, instance: models.Party, created: bool, **kwargs):
     for message_template in models.MessageTemplate.objects.filter(is_default_party_message=True):
-        models.Message.objects.get_or_create(party=instance, template=message_template)
+        if not models.Message.objects.filter(party=instance, title=message_template.title).exists():
+            models.Message.objects.create(party=instance, template=message_template)
 
 
 @receiver(post_save, sender=models.Message)
