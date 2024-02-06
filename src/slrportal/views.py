@@ -257,7 +257,7 @@ def privacy_policy(request: HttpRequest) -> HttpResponse:
     return render(request, "slrportal/privacy_policy.html")
 
 
-def custom_404(request, exception: Exception) -> HttpResponseNotFound:
+def custom_404(request: HttpRequest, exception: Exception) -> HttpResponseNotFound:
     template = loader.get_template("404.html")
     context = {
         "request_path": request.path,
@@ -268,10 +268,10 @@ def custom_404(request, exception: Exception) -> HttpResponseNotFound:
 
 @method_decorator(login_required, name="dispatch")
 class DeleteProfileView(View):
-    def get(self, request):
+    def get(self, request: HttpRequest) -> HttpResponse:
         return render(request, "slrportal/confirm_delete_profile.html")
 
-    def post(self, request):
+    def post(self, request: HttpRequest) -> HttpResponse:
         user = request.user
         user.delete()
         return redirect("home")
