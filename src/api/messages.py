@@ -25,12 +25,14 @@ def send_whatsapp_message(
     kwargs = dict(
         body=body,
         from_=settings.TWILIO_SENDER_SID,
-        content_variables=json.dumps(variables),
+        # content_variables=json.dumps(variables),
         to=f"whatsapp:{to}",
         status_callback=callback_url,
     )
     if content_sid is not None:
         kwargs["content_sid"] = content_sid
+    if variables:
+        kwargs["content_variables"] = json.dumps(variables)
     message = client.messages.create(
         **kwargs,
     )
