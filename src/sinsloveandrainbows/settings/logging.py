@@ -12,6 +12,7 @@ LOGGING = {
             "level": "ERROR",
             "class": "logging.FileHandler",
             "filename": "django_error.log",  # File for logging Django errors
+            "formatter": "verbose",
         },
         "twilio_file": {
             "level": "INFO",
