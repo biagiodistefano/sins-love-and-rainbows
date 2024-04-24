@@ -62,4 +62,4 @@ def create_template_message(sender, instance: models.MessageTemplate, **kwargs):
         if instance._original_text != instance.text:
             tasks.submit_new_template.delay(instance)
     except Exception as e:
-        print(f"Error submitting template: {e}")
+        logger.exception(f"Error submitting template: {e}")
