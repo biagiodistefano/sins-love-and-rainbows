@@ -35,13 +35,11 @@ class TwilioController:  # type: ignore
     def receive_message(self, request: HttpRequest):
         from_number = request.POST.get("From", "")
         clean_number = from_number.replace("whatsapp:", "")
-        if clean_number == settings.MY_PHONE_NUMBER:
-            return admin_logic(request)
         body = request.POST.get("Body", "")
         logger.info(f"Received message from {clean_number}: {body}")
-
+        if clean_number == settings.MY_PHONE_NUMBER:
+            return admin_logic(request)
         person = get_object_or_404(models.Person, phone_number=clean_number)
-
         if body.lower().strip() == "stop":
             person.preferences.whatsapp_notifications = False
             person.preferences.save()
