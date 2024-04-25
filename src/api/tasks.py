@@ -131,7 +131,7 @@ def update_approval_statuses() -> None:
 def set_inbound_webhook() -> None:
     client = TwilioClient(settings.TWILIO_ACCOUNT_SID, settings.TWILIO_AUTH_TOKEN)
     service = client.messaging.v1.services.get(settings.TWILIO_SENDER_SID)
-    inbound_path = reverse("slr-api:twilio_status_callback")
+    inbound_path = reverse("slr-api:twilio_inbound")
     inbound_url = (settings.NGROK_URL or f"https://{Site.objects.get_current().domain}") + inbound_path
     service.update(inbound_request_url=inbound_url)
     logger.info(f"Set inbound webhook to {inbound_url}")
