@@ -7,3 +7,6 @@ class ApiConfig(AppConfig):
 
     def ready(self):
         from . import signals  # noqa: F401
+        from .tasks import set_inbound_webhook
+
+        set_inbound_webhook()

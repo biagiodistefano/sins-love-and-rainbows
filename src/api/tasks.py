@@ -7,6 +7,9 @@ from django.db.models import F, Q
 from django.shortcuts import reverse
 from django.utils import timezone
 from twilio.rest.api.v2010.account.message import MessageInstance
+from twilio.rest import Client as TwilioClient
+from . import settings
+
 
 from . import models
 from .messages import send_whatsapp_message as _send_whatsapp_message
@@ -123,3 +126,12 @@ def update_approval_statuses() -> None:
     for template in models.MessageTemplate.objects.filter(status="PENDING"):
         template.update_status()
         logger.info(f"Updated status for template: {template}")
+
+
+def set_inbound_webhook() -> None:
+    client = TwilioClient(settings.TWILIO_ACCOUNT_SID, settings.TWILIO_AUTH_TOKEN)
+    service = client.messaging.v1.services.get(settings.TWILIO_SENDER_SID)
+    inbound_path = reverse("slr-api:twilio_status_callback")
+    inbound_url = (settings.NGROK_URL or f"https://{Site.objects.get_current().domain}") + inbound_path
+    service.update(inbound_request_url=inbound_url)
+    logger.info(f"Set inbound webhook to {inbound_url}")
