@@ -77,6 +77,10 @@ def admin_logic(request: HttpRequest) -> HttpResponse:
             messages.send_whatsapp_message(to=settings.MY_PHONE_NUMBER, body=f"Error while handling vCard: {e}")
 
         return HttpResponse("OK", status=200)
+    else:
+        body = request.POST.get("Body", "")
+        if body.lower() == "healthcheck":
+            messages.send_whatsapp_message(to=settings.MY_PHONE_NUMBER, body="Service healthy")
     return HttpResponse("OK", status=200)
 
 
