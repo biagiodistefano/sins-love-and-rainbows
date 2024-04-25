@@ -26,7 +26,7 @@ class TwilioController:  # type: ignore
         if message.error:
             message.error_message = message_error
         message.save()
-        if message.status in ("undelivered", "failed"):
+        if message.status in ("undelivered", "failed", "queued"):
             logger.error(f"{message}")
             tasks.send_whatsapp_message.delay(settings.MY_PHONE_NUMBER, f"{message}")
         return HttpResponse("OK", status=200)
