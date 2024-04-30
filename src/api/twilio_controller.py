@@ -4,9 +4,10 @@ from django.http import HttpRequest, HttpResponse
 from django.shortcuts import get_object_or_404
 from ninja_extra import api_controller, route
 import requests
+from django.core.mail import send_mail
 
-
-from . import messages, models, settings, tasks
+from . import messages, models
+from django.conf import settings
 from .auth import TwilioAuth
 
 logger = logging.getLogger("twilio_whatsapp")
@@ -28,7 +29,13 @@ class TwilioController:  # type: ignore
         message.save()
         if message.status in ("undelivered", "failed", "queued"):
             logger.error(f"{message}")
-            tasks.send_whatsapp_message.delay(settings.MY_PHONE_NUMBER, f"{message}")
+            send_mail(
+                f"Error sending message {message}",
+                message,
+                settings.DEFAULT_FROM_EMAIL,
+                [admin[1] for admin in settings.ADMINS],
+                fail_silently=True,
+            )
         return HttpResponse("OK", status=200)
 
     @route.post("/inbound", url_name="twilio_inbound")
