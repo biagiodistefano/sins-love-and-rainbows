@@ -113,5 +113,6 @@ def handle_vcard(vcard: str) -> int:
     party = models.Party.get_next()
     for data in extracted_data:
         person = models.Person.objects.create(**data)
-        models.Invite.objects.create(person=person, party=party, status=None)
+        if party is not None:
+            models.Invite.objects.create(person=person, party=party, status=None)
     return len(extracted_data)

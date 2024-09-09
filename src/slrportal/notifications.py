@@ -1,8 +1,10 @@
+import requests
+from celery import shared_task
 from django.conf import settings
 from django.contrib.sites.models import Site
-from django.core.mail import send_mail
+
+# from django.core.mail import send_mail
 from django.shortcuts import reverse
-from celery import shared_task
 
 from api import models
 
@@ -22,18 +24,17 @@ def notify_admins_of_rsvp_change(person: models.Person, party: models.Party, rsv
     party_url = f"https://{site.domain}" + reverse("party", kwargs={"edition": party.edition})
 
     subject = f"{person.get_full_name()} RSVP'd {rsvp.get_status_display()} to {party}"
-    message = (
-        f"{person.get_full_name()} has replied {rsvp.get_status_display()} to their invitation to {party}\n\n"
-        f"View the party details at {party_url}"
-    )
+    message = f"{person.get_full_name()} has replied {rsvp.get_status_display()} to their invitation to {party}\n\n"
 
-    send_mail(
-        subject,
-        message,
-        settings.DEFAULT_FROM_EMAIL,
-        [admin[1] for admin in settings.ADMINS],
-        fail_silently=True,
-    )
+    send_pushover_notification(title=subject, message=message, url=party_url, url_title="View party details")
+
+    # send_mail(
+    #     subject,
+    #     message,
+    #     settings.DEFAULT_FROM_EMAIL,
+    #     [admin[1] for admin in settings.ADMINS],
+    #     fail_silently=True,
+    # )
 
 
 @shared_task
@@ -46,10 +47,26 @@ def notify_admins_of_item_change(item: models.Item, person: models.Person, actio
         f"{person.get_full_name()} {action} {item.name} for {item.party}\n\n" f"View the party details at {party_url}"
     )
 
-    send_mail(
-        subject,
-        message,
-        settings.DEFAULT_FROM_EMAIL,
-        [admin[1] for admin in settings.ADMINS],
-        fail_silently=True,
+    send_pushover_notification(title=subject, message=message, url=party_url, url_title="View party details")
+
+    # send_mail(
+    #     subject,
+    #     message,
+    #     settings.DEFAULT_FROM_EMAIL,
+    #     [admin[1] for admin in settings.ADMINS],
+    #     fail_silently=True,
+    # )
+
+
+@shared_task
+def send_pushover_notification(title: str, message: str, url: str | None = None, url_title: str | None = None) -> None:
+    data = dict(
+        token=settings.PUSHOVER_TOKEN,
+        user=settings.PUSHOVER_USER_KEY,
+        message=message,
+        title=title,
+        url=url,
+        url_title=url_title,
     )
+    data = {key: value for key, value in data.items() if value is not None}
+    requests.post("https://api.pushover.net/1/messages.json", data=data)

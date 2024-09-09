@@ -4,3 +4,4 @@ from .database import *  # noqa: F403
 from .email import *  # noqa: F403
 from .logging import *  # noqa: F403
 from .twilio import *  # noqa: F403
+from .pushover import *  # noqa: F403
