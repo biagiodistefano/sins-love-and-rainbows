@@ -151,7 +151,10 @@ class Party(models.Model):
 
     @classmethod
     def get_next(cls) -> Optional["Party"]:
-        return cls.objects.filter(date_and_time__gte=timezone.now(), closed=False).earliest("date_and_time")
+        try:
+            return cls.objects.filter(date_and_time__gte=timezone.now(), closed=False).earliest("date_and_time")
+        except cls.DoesNotExist:
+            return None
 
     @property
     def logo_url(self) -> str | None:
