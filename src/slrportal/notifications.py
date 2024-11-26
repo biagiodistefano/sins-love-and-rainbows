@@ -1,10 +1,12 @@
+import requests
+from celery import shared_task
 from django.conf import settings
 from django.contrib.sites.models import Site
-from django.core.mail import send_mail
 from django.shortcuts import reverse
-from celery import shared_task
 
 from api import models
+
+PUSHOVER_URL = "https://api.pushover.net/1/messages.json"
 
 
 @shared_task
@@ -27,13 +29,15 @@ def notify_admins_of_rsvp_change(person: models.Person, party: models.Party, rsv
         f"View the party details at {party_url}"
     )
 
-    send_mail(
-        subject,
-        message,
-        settings.DEFAULT_FROM_EMAIL,
-        [admin[1] for admin in settings.ADMINS],
-        fail_silently=True,
+    data = dict(
+        token=settings.PUSHOVER_TOKEN,
+        user=settings.PUSHOVER_USER_KEY,
+        message=message,
+        title=subject,
+        url=party_url,
+        url_title=party.name,
     )
+    requests.post(PUSHOVER_URL, data=data)
 
 
 @shared_task
@@ -46,10 +50,12 @@ def notify_admins_of_item_change(item: models.Item, person: models.Person, actio
         f"{person.get_full_name()} {action} {item.name} for {item.party}\n\n" f"View the party details at {party_url}"
     )
 
-    send_mail(
-        subject,
-        message,
-        settings.DEFAULT_FROM_EMAIL,
-        [admin[1] for admin in settings.ADMINS],
-        fail_silently=True,
+    data = dict(
+        token=settings.PUSHOVER_TOKEN,
+        user=settings.PUSHOVER_USER_KEY,
+        message=message,
+        title=subject,
+        url=party_url,
+        url_title=item.party.name,
     )
+    requests.post(PUSHOVER_URL, data=data)

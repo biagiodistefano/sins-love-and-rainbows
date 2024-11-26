@@ -138,7 +138,6 @@ AUTHENTICATION_BACKENDS = (
     "slrportal.auth_backend.CustomQueryParamAuthentication",
 )
 
-
 SLR_USE_AUTH = config("SLR_USE_AUTH", default=True, cast=bool)
 
 DATA_UPLOAD_MAX_MEMORY_SIZE = int((config("DATA_UPLOAD_MAX_SIZE_MB", cast=float, default=10) * 1024 * 1024))  # 1 MB
@@ -150,3 +149,6 @@ AUTH_USER_MODEL = "api.Person"
 
 DEFAULT_SUPERUSER_USERNAME = config("DEFAULT_SUPERUSER_USERNAME", default="admin")
 DEFAULT_SUPERUSER_PASSWORD = config("DEFAULT_SUPERUSER_PASSWORD", default="admin")
+
+PUSHOVER_TOKEN = config("PUSHOVER_TOKEN", default="")
+PUSHOVER_USER_KEY = config("PUSHOVER_USER_KEY", default="")
