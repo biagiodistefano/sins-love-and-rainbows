@@ -233,7 +233,9 @@ def add_allergy(request: HttpRequest) -> HttpResponse:
     allergy_name = request.POST.get("allergy")
     if allergy_name is None:
         return HttpResponseBadRequest("No allergy provided")
-    ingredient, _ = models.Ingredient.objects.get_or_create(name=allergy_name)
+    ingredient, created = models.Ingredient.objects.get_or_create(name=allergy_name)
+    if created:
+        notifications.notify_admins_of_ingredient_creation.delay(ingredient, person)
     allergy, _ = models.Allergy.objects.get_or_create(ingredient=ingredient, person=person)
     return redirect("profile")
 

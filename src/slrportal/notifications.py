@@ -59,3 +59,22 @@ def notify_admins_of_item_change(item: models.Item, person: models.Person, actio
         url_title=item.party.name,
     )
     requests.post(PUSHOVER_URL, data=data)
+
+
+@shared_task
+def notify_admins_of_ingredient_creation(ingredient: models.Ingredient, person: models.Person) -> None:
+    site = Site.objects.get_current()
+    ingredient_url = f"https://{site.domain}" + reverse("ingredient", kwargs={"pk": ingredient.pk})
+
+    subject = f"{person.get_full_name()} created {ingredient.name}"
+    message = f"{person.get_full_name()} created {ingredient.name}\n\n" f"View the ingredient at {ingredient_url}"
+
+    data = dict(
+        token=settings.PUSHOVER_TOKEN,
+        user=settings.PUSHOVER_USER_KEY,
+        message=message,
+        title=subject,
+        url=ingredient_url,
+        url_title=ingredient.name,
+    )
+    requests.post(PUSHOVER_URL, data=data)
