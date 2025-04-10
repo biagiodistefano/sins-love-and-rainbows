@@ -10,7 +10,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent.parent
 # See https://docs.djangoproject.com/en/4.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = config("SECRET_KEY")
+SECRET_KEY = config("SECRET_KEY", default="insecure-key")
 
 # SECURITY WARNING: don't run with debug turned on in production!
 
@@ -155,6 +155,3 @@ CSRF_TRUSTED_ORIGINS = [
     "https://sinsloveandrainbows.eu",
     "https://www.sinsloveandrainbows.eu",
 ]
-
-PUSHOVER_TOKEN = config("PUSHOVER_TOKEN", default="")
-PUSHOVER_USER_KEY = config("PUSHOVER_USER_KEY", default="")

@@ -29,6 +29,8 @@ USER appuser
 COPY --chown=appuser:appuser src/ ./src/
 WORKDIR /app/src
 
+ENV DOCKER_BUILD=1
+
 RUN python manage.py collectstatic --noinput
 
 COPY --chown=appuser:appuser entrypoint.sh /app/entrypoint.sh

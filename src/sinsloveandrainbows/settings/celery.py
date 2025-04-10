@@ -1,7 +1,12 @@
 from .base import TIME_ZONE
 from decouple import config
 
-CELERY_BROKER_URL = config("CELERY_BROKER_URL", default="redis://localhost:6379/0")
+
+
+
+REDIS_HOST = config("REDIS_HOST", default="localhost")
+REDIS_DB = config("REDIS_DB", default=0, cast=int)
+CELERY_BROKER_URL = f"redis://{REDIS_HOST}:6379/{REDIS_DB}"
 CELERY_ACCEPT_CONTENT = ["application/json", "application/x-python-serialize"]
 CELERY_RESULT_EXTENDED = True
 CELERY_TASK_SERIALIZER = "pickle"
