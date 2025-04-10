@@ -138,7 +138,6 @@ AUTHENTICATION_BACKENDS = (
     "slrportal.auth_backend.CustomQueryParamAuthentication",
 )
 
-
 SLR_USE_AUTH = config("SLR_USE_AUTH", default=True, cast=bool)
 
 DATA_UPLOAD_MAX_MEMORY_SIZE = int((config("DATA_UPLOAD_MAX_SIZE_MB", cast=float, default=10) * 1024 * 1024))  # 1 MB
@@ -156,3 +155,6 @@ CSRF_TRUSTED_ORIGINS = [
     "https://sinsloveandrainbows.eu",
     "https://www.sinsloveandrainbows.eu",
 ]
+
+PUSHOVER_TOKEN = config("PUSHOVER_TOKEN", default="")
+PUSHOVER_USER_KEY = config("PUSHOVER_USER_KEY", default="")
