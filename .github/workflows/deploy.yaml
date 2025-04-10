@@ -33,5 +33,5 @@ jobs:
           file: ./Dockerfile
           push: true
           tags: |
-            ghcr.io/biagiodistefano/biagiodistefano:latest
-            ghcr.io/biagiodistefano/biagiodistefano:${{ env.VERSION }}
+            ghcr.io/biagiodistefano/slr:latest
+            ghcr.io/biagiodistefano/slr:${{ env.VERSION }}
