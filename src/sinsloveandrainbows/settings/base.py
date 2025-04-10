@@ -13,9 +13,9 @@ BASE_DIR = Path(__file__).resolve().parent.parent.parent
 SECRET_KEY = config("SECRET_KEY")
 
 # SECURITY WARNING: don't run with debug turned on in production!
-CURRENT_BRANCH = check_output(["git", "symbolic-ref", "--short", "HEAD"]).decode("utf8")[0:-1]
 
-DEBUG = CURRENT_BRANCH != "production"
+DEBUG = config("DEBUG", default=False, cast=bool)
+
 ALLOWED_HOSTS = (
     config("ALLOWED_HOSTS", cast=lambda v: [s.strip() for s in v.split(",")], default="") if not DEBUG else ["*"]
 )
@@ -150,3 +150,9 @@ AUTH_USER_MODEL = "api.Person"
 
 DEFAULT_SUPERUSER_USERNAME = config("DEFAULT_SUPERUSER_USERNAME", default="admin")
 DEFAULT_SUPERUSER_PASSWORD = config("DEFAULT_SUPERUSER_PASSWORD", default="admin")
+
+
+CSRF_TRUSTED_ORIGINS = [
+    "https://sinsloveandrainbows.eu",
+    "https://www.sinsloveandrainbows.eu",
+]
